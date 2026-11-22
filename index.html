@@ -369,6 +369,9 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">Controles</div><div class="modal-controls">'
     +'<div class="power-row" style="margin-bottom:12px"><label style="font-size:.85rem;color:var(--text2);min-width:80px">Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'"><span id="mpw-val" style="font-size:1rem;font-weight:700;color:var(--green);min-width:50px;text-align:right">'+cp+'%</span></div>'
     +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">Terminal CMD</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="cmd-input" placeholder="ex: ipconfig, tasklist, dir..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execCmd(\''+h+'\')"><button onclick="execCmd(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">Executer</button></div>'
+    +'<div id="cmd-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--green);max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
     +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button></div>';
   document.getElementById('modal').classList.add('show');
 }
@@ -540,6 +543,36 @@ function render(machines){
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
+// CMD REMOTE
+async function execCmd(hostname){
+  const input=document.getElementById('cmd-input');
+  const output=document.getElementById('cmd-output');
+  const cmd=input.value.trim();
+  if(!cmd)return;
+  output.style.display='block';
+  output.textContent='> '+cmd+'\nEnvoi en cours...';
+  try{
+    await sendCommand(hostname,'command','cmd:'+cmd);
+    output.textContent='> '+cmd+'\nCommande envoyee, attente reponse...';
+    let attempts=0;
+    const poll=setInterval(async()=>{
+      attempts++;
+      try{
+        const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(hostname)+'&level=eq.cmd_output&order=created_at.desc&limit=1',{headers:H});
+        const d=await r.json();
+        if(d.length>0&&d[0].message){
+          const msg=d[0].message;
+          if(msg.startsWith('CMD:'+cmd.substring(0,20))||attempts>15){
+            clearInterval(poll);
+            output.textContent='> '+cmd+'\n'+msg.replace(/^CMD:[^\n]*\n/,'');
+          }
+        }
+      }catch{}
+      if(attempts>20){clearInterval(poll);output.textContent+='Timeout - pas de reponse';}
+    },2000);
+  }catch(e){output.textContent='Erreur: '+e.message}
+}
 
 fetchRvnPrice();setInterval(fetchRvnPrice,300000);
 loadData();setInterval(loadData,10000);
