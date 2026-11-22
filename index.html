@@ -5,515 +5,544 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AZERTY TOOL - Dashboard</title>
 <style>
+:root{
+  --bg:#0a0a0a;--bg2:#161b22;--bg3:#0d1117;--border:#30363d;--border2:#21262d;
+  --text:#e0e0e0;--text2:#8b949e;--green:#00ff88;--green2:#3fb950;--green3:#238636;
+  --red:#f85149;--red2:#da3633;--gold:#ffd700;--purple:#8957e5;--blue:#58a6ff;
+}
+[data-theme="light"]{
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f8f9fa;--border:#d0d7de;--border2:#e1e4e8;
+  --text:#1f2328;--text2:#656d76;--green:#00cc6a;--green2:#1a7f37;--green3:#2da44e;
+  --red:#cf222e;--red2:#a40e26;--gold:#bf8700;--purple:#8250df;--blue:#0969da;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
 
-/* ---- ANIMATIONS ---- */
 @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes slideInRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.4)}50%{box-shadow:0 0 0 8px rgba(63,185,80,0)}}
 @keyframes glow{0%,100%{text-shadow:0 0 10px rgba(0,255,136,.3)}50%{text-shadow:0 0 20px rgba(0,255,136,.6)}}
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes modalBgIn{from{opacity:0}to{opacity:1}}
-@keyframes countUp{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes barFill{from{width:0}to{width:var(--bar-w)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
-.header{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid #30363d;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;animation:fadeIn .6s ease}
-.header h1{font-size:1.5rem;color:#00ff88;letter-spacing:2px;animation:glow 3s ease-in-out infinite}
+.header{background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--border);padding:20px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;animation:fadeIn .6s ease}
+.header h1{font-size:1.5rem;color:var(--green);letter-spacing:2px;animation:glow 3s ease-in-out infinite}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .2s}
+.theme-toggle:hover{border-color:var(--green);color:var(--text)}
 .header .stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;text-align:center;min-width:80px;transition:transform .2s,border-color .2s;animation:fadeInUp .5s ease backwards}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;min-width:80px;transition:all .2s;animation:fadeInUp .5s ease backwards}
 .stat-box:nth-child(1){animation-delay:.1s}.stat-box:nth-child(2){animation-delay:.2s}.stat-box:nth-child(3){animation-delay:.3s}.stat-box:nth-child(4){animation-delay:.4s}
-.stat-box:hover{transform:translateY(-2px);border-color:#00ff88}
-.stat-box .num{font-size:1.4rem;font-weight:700;color:#00ff88;animation:countUp .4s ease}
-.stat-box .label{font-size:.65rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px}
+.stat-box:hover{transform:translateY(-2px);border-color:var(--green)}
+.stat-box .num{font-size:1.4rem;font-weight:700;color:var(--green)}
+.stat-box .label{font-size:.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
 
 .earnings-banner{background:linear-gradient(135deg,#1a1a0a,#2a2a10);border-bottom:1px solid #3d3d1d;padding:14px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;animation:fadeIn .7s ease}
+[data-theme="light"] .earnings-banner{background:linear-gradient(135deg,#fffde7,#fff8e1)}
 .earnings-banner .earn-block{text-align:center;transition:transform .2s}
 .earnings-banner .earn-block:hover{transform:scale(1.05)}
-.earnings-banner .earn-label{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px}
-.earnings-banner .earn-val{font-size:1.3rem;font-weight:700;color:#ffd700}
-.earnings-banner .earn-sub{font-size:.75rem;color:#8b949e}
-.earnings-banner .rvn-price{font-size:.8rem;color:#8b949e}
+.earnings-banner .earn-label{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.earnings-banner .earn-val{font-size:1.3rem;font-weight:700;color:var(--gold)}
+.earnings-banner .earn-sub{font-size:.75rem;color:var(--text2)}
 
-.refresh-bar{background:#161b22;padding:8px 30px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #21262d;font-size:.8rem;color:#8b949e}
-.refresh-bar button{background:#238636;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s}
-.refresh-bar button:hover{background:#2ea043;transform:scale(1.05)}
-.refresh-bar button:active{transform:scale(.95)}
+.nav-bar{background:var(--bg2);padding:8px 30px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);font-size:.8rem;color:var(--text2);flex-wrap:wrap;gap:8px}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{background:none;border:1px solid transparent;color:var(--text2);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s}
+.nav-tab:hover{color:var(--text);background:var(--bg3)}
+.nav-tab.active{background:var(--green3);color:#fff;border-color:var(--green3)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-right button{background:var(--green3);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s}
+.nav-right button:hover{opacity:.85}
+.notif-btn{background:none!important;border:1px solid var(--border)!important;color:var(--text2)!important;position:relative}
+.notif-btn.active{border-color:var(--green)!important;color:var(--green)!important}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--red);border-radius:50%;display:none}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;padding:20px 30px}
+/* PAGES */
+.page{display:none;padding:20px 30px;animation:fadeIn .3s ease}
+.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
 
-.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:18px;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer;animation:fadeInUp .5s ease backwards;position:relative;overflow:hidden}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer;animation:fadeInUp .5s ease backwards;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,136,.03),transparent);transition:left .5s}
 .card:hover::before{left:100%}
-.card:hover{border-color:#00ff88;transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,255,136,.1)}
-.card:active{transform:translateY(-2px)}
-
+.card:hover{border-color:var(--green);transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .card-name{font-weight:700;font-size:1rem}
-.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;transition:all .3s}
-.badge.online{background:#0d2818;color:#3fb950;border:1px solid #238636;animation:pulse 2s infinite}
-.badge.offline{background:#2d1215;color:#f85149;border:1px solid #da3633}
-
-.card-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.85rem;border-bottom:1px solid #21262d}
-.card-row:last-child{border:none}
-.card-row .k{color:#8b949e}
-.card-row .v{color:#e0e0e0;font-weight:500}
-
-.gpu-bar{height:6px;background:#21262d;border-radius:3px;margin-top:8px;overflow:hidden}
+.badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.badge.online{background:#0d2818;color:var(--green2);border:1px solid var(--green3);animation:pulse 2s infinite}
+.badge.offline{background:#2d1215;color:var(--red);border:1px solid var(--red2)}
+[data-theme="light"] .badge.online{background:#dafbe1}
+[data-theme="light"] .badge.offline{background:#ffebe9}
+.card-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.85rem;border-bottom:1px solid var(--border2)}.card-row:last-child{border:none}
+.card-row .k{color:var(--text2)}.card-row .v{color:var(--text);font-weight:500}
+.gpu-bar{height:6px;background:var(--border2);border-radius:3px;margin-top:8px;overflow:hidden}
 .gpu-bar .fill{height:100%;border-radius:3px;animation:barFill .8s ease;transition:width .5s}
-
-.card-earnings{background:#1a1a0a;border:1px solid #3d3d1d;border-radius:8px;padding:10px;margin-top:10px;display:flex;justify-content:space-around;text-align:center}
-.card-earnings .ce-block .ce-val{font-size:1rem;font-weight:700;color:#ffd700}
-.card-earnings .ce-block .ce-label{font-size:.65rem;color:#8b949e;text-transform:uppercase}
-
-.card-controls{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;margin-top:10px}
+.card-earnings{background:linear-gradient(135deg,#1a1a0a,#1a1a05);border:1px solid #3d3d1d;border-radius:8px;padding:10px;margin-top:10px;display:flex;justify-content:space-around;text-align:center}
+[data-theme="light"] .card-earnings{background:#fffde7;border-color:#e0d68a}
+.ce-block .ce-val{font-size:1rem;font-weight:700;color:var(--gold)}.ce-block .ce-label{font-size:.65rem;color:var(--text2);text-transform:uppercase}
+.card-controls{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px}
 .power-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.power-row label{font-size:.8rem;color:#8b949e;min-width:70px}
-.power-row input[type=range]{flex:1;accent-color:#00ff88;height:6px}
-.power-row .power-val{font-size:.9rem;font-weight:700;color:#00ff88;min-width:40px;text-align:right}
+.power-row label{font-size:.8rem;color:var(--text2);min-width:70px}
+.power-row input[type=range]{flex:1;accent-color:var(--green);height:6px}
+.power-row .power-val{font-size:.9rem;font-weight:700;color:var(--green);min-width:40px;text-align:right}
 .ctrl-btns{display:flex;gap:8px}
 .ctrl-btns button{flex:1;padding:8px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s}
 .ctrl-btns button:hover{opacity:.85;transform:translateY(-1px)}
-.ctrl-btns button:active{transform:translateY(1px)}
-.btn-stop{background:#da3633;color:#fff}
-.btn-restart{background:#238636;color:#fff}
-.btn-screen{background:#8957e5;color:#fff}
+.btn-stop{background:var(--red2);color:#fff}.btn-restart{background:var(--green3);color:#fff}.btn-screen{background:var(--purple);color:#fff}
 
-/* ---- TOAST ---- */
-.toast{position:fixed;bottom:20px;right:20px;background:#238636;color:#fff;padding:12px 20px;border-radius:8px;font-size:.85rem;z-index:99999;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
+/* CHARTS PAGE */
+.chart-container{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;animation:fadeInUp .5s ease}
+.chart-title{font-size:.9rem;font-weight:600;margin-bottom:12px;color:var(--text)}
+.chart-canvas{width:100%;height:200px;position:relative}
+.chart-svg{width:100%;height:100%}
+.chart-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chart-area{opacity:.15}
+.chart-grid line{stroke:var(--border2);stroke-width:1}
+.chart-label{font-size:11px;fill:var(--text2)}
+.chart-dot{r:3;transition:r .2s}
+.chart-dot:hover{r:6}
+.chart-selector{display:flex;gap:8px;margin-bottom:16px}
+.chart-selector select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:.85rem}
+
+/* NETWORK MAP */
+.network-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.network-group{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;animation:fadeInUp .5s ease}
+.network-title{font-size:.85rem;font-weight:700;color:var(--blue);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.network-title .net-icon{width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.net-machine{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;margin-bottom:4px;transition:background .2s}
+.net-machine:hover{background:var(--bg3)}
+.net-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.net-dot.on{background:var(--green2)}.net-dot.off{background:var(--red)}
+.net-info{flex:1;font-size:.85rem}
+.net-info .net-name{font-weight:600}.net-info .net-ip{color:var(--text2);font-size:.75rem}
+.net-hash{font-size:.85rem;font-weight:600;color:var(--green)}
+
+/* LOGS PAGE */
+.log-entry{display:flex;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border2);font-size:.85rem;animation:fadeIn .3s ease}
+.log-entry:hover{background:var(--bg3)}
+.log-time{color:var(--text2);min-width:140px;font-family:monospace;font-size:.8rem}
+.log-host{color:var(--blue);min-width:120px;font-weight:600}
+.log-level{min-width:50px;font-weight:700;text-transform:uppercase;font-size:.7rem;padding:2px 8px;border-radius:4px;text-align:center;height:fit-content}
+.log-level.info{background:#0d2818;color:var(--green2)}.log-level.warn{background:#2a2a10;color:var(--gold)}.log-level.error{background:#2d1215;color:var(--red)}
+[data-theme="light"] .log-level.info{background:#dafbe1}[data-theme="light"] .log-level.warn{background:#fff8c5}[data-theme="light"] .log-level.error{background:#ffebe9}
+.log-msg{flex:1;color:var(--text)}
+.logs-empty{text-align:center;padding:40px;color:var(--text2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green3);color:#fff;padding:12px 20px;border-radius:8px;font-size:.85rem;z-index:99999;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 
-/* ---- MODAL OVERLAY ---- */
+/* MODAL */
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.show{display:flex;animation:modalBgIn .3s ease}
-
-.modal-box{background:#0d1117;border:1px solid #30363d;border-radius:16px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;animation:modalIn .4s cubic-bezier(.4,0,.2,1);box-shadow:0 25px 60px rgba(0,0,0,.5)}
-
-.modal-top{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #21262d;position:sticky;top:0;background:#0d1117;z-index:1;border-radius:16px 16px 0 0}
-.modal-top h2{font-size:1.1rem;color:#e0e0e0;display:flex;align-items:center;gap:10px}
-.modal-top .m-badge{font-size:.7rem}
-.modal-close{background:none;border:1px solid #30363d;color:#8b949e;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-close:hover{color:#fff;border-color:#8b949e;background:#161b22}
-
+.modal-box{background:var(--bg3);border:1px solid var(--border);border-radius:16px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;animation:modalIn .4s cubic-bezier(.4,0,.2,1);box-shadow:0 25px 60px rgba(0,0,0,.5)}
+.modal-top{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border2);position:sticky;top:0;background:var(--bg3);z-index:1;border-radius:16px 16px 0 0}
+.modal-top h2{font-size:1.1rem;color:var(--text);display:flex;align-items:center;gap:10px}
+.modal-close{background:none;border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{color:var(--text);border-color:var(--text2);background:var(--bg2)}
 .modal-content{padding:20px 24px}
-
 .modal-section{margin-bottom:20px;animation:fadeInUp .4s ease backwards}
-.modal-section:nth-child(1){animation-delay:.1s}
-.modal-section:nth-child(2){animation-delay:.2s}
-.modal-section:nth-child(3){animation-delay:.3s}
-.modal-section:nth-child(4){animation-delay:.4s}
-.modal-section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:#8b949e;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #21262d}
-
+.modal-section:nth-child(1){animation-delay:.1s}.modal-section:nth-child(2){animation-delay:.2s}.modal-section:nth-child(3){animation-delay:.3s}.modal-section:nth-child(4){animation-delay:.4s}
+.modal-section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2)}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.info-item{background:#161b22;border-radius:8px;padding:10px 14px;border:1px solid #21262d;transition:border-color .2s}
-.info-item:hover{border-color:#30363d}
-.info-item .ii-label{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-.info-item .ii-val{font-size:.95rem;font-weight:600;color:#e0e0e0}
-.info-item .ii-val.green{color:#3fb950}
-.info-item .ii-val.gold{color:#ffd700}
-.info-item .ii-val.red{color:#f85149}
-.info-item .ii-val.purple{color:#bc8cff}
-
-.modal-gpu-bar{height:10px;background:#21262d;border-radius:5px;overflow:hidden;margin-top:6px}
+.info-item{background:var(--bg2);border-radius:8px;padding:10px 14px;border:1px solid var(--border2);transition:border-color .2s}
+.info-item:hover{border-color:var(--border)}
+.ii-label{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.ii-val{font-size:.95rem;font-weight:600;color:var(--text)}
+.ii-val.green{color:var(--green2)}.ii-val.gold{color:var(--gold)}.ii-val.red{color:var(--red)}.ii-val.purple{color:var(--purple)}
+.modal-gpu-bar{height:10px;background:var(--border2);border-radius:5px;overflow:hidden;margin-top:6px}
 .modal-gpu-bar .fill{height:100%;border-radius:5px;transition:width .8s ease}
-
-/* ---- SCREENSHOT SECTION ---- */
-.screen-gallery{display:grid;grid-template-columns:1fr;gap:12px}
-.screen-item{background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden;transition:all .3s}
-.screen-item:hover{border-color:#8957e5}
+.screen-gallery{display:grid;gap:12px}
+.screen-item{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;overflow:hidden;transition:all .3s}
+.screen-item:hover{border-color:var(--purple)}
 .screen-item img{width:100%;display:block;cursor:pointer;transition:transform .3s}
 .screen-item img:hover{transform:scale(1.02)}
-.screen-meta{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#0d1117}
-.screen-meta .screen-date{font-size:.8rem;color:#8b949e}
-.screen-meta .btn-delete{background:none;border:1px solid #da3633;color:#f85149;padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .2s}
-.screen-meta .btn-delete:hover{background:#da3633;color:#fff}
-.no-screens{text-align:center;padding:30px;color:#484f58;font-size:.9rem}
+.screen-meta{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3)}
+.screen-meta .screen-date{font-size:.8rem;color:var(--text2)}
+.screen-meta .btn-delete{background:none;border:1px solid var(--red2);color:var(--red);padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.screen-meta .btn-delete:hover{background:var(--red2);color:#fff}
+.no-screens{text-align:center;padding:30px;color:var(--text2);font-size:.9rem}
+.modal-controls{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px}
+.modal-btns{display:flex;gap:10px}
+.modal-btns button{flex:1;padding:10px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s}
+.modal-btns button:hover{transform:translateY(-2px)}
+.btn-delete-machine{background:none;border:1px solid var(--red2);color:var(--red);padding:8px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;width:100%;margin-top:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.btn-delete-machine:hover{background:var(--red2);color:#fff}
 
-/* ---- FULLSCREEN IMAGE ---- */
 .fullscreen-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:20000;align-items:center;justify-content:center;cursor:zoom-out;padding:20px}
 .fullscreen-overlay.show{display:flex;animation:modalBgIn .2s ease}
 .fullscreen-overlay img{max-width:95vw;max-height:95vh;border-radius:8px;animation:modalIn .3s ease}
 
-/* ---- MODAL CONTROLS ---- */
-.modal-controls{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px}
-.modal-power-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.modal-power-row label{font-size:.85rem;color:#8b949e;min-width:80px}
-.modal-power-row input[type=range]{flex:1;accent-color:#00ff88;height:8px}
-.modal-power-row .mpw-val{font-size:1rem;font-weight:700;color:#00ff88;min-width:50px;text-align:right}
-.modal-btns{display:flex;gap:10px}
-.modal-btns button{flex:1;padding:10px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s}
-.modal-btns button:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,0,0,.3)}
-.modal-btns button:active{transform:translateY(0)}
+.empty{text-align:center;padding:60px 20px;color:var(--text2);animation:fadeIn .8s ease}
+.empty h2{color:var(--border);margin-bottom:10px}
 
-/* ---- DELETE MACHINE ---- */
-.btn-delete-machine{background:none;border:1px solid #da3633;color:#f85149;padding:8px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;width:100%;margin-top:10px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
-.btn-delete-machine:hover{background:#da3633;color:#fff}
+/* TEMP ALERT */
+.temp-alert{position:fixed;top:20px;right:20px;background:var(--red2);color:#fff;padding:14px 20px;border-radius:10px;z-index:99998;animation:shake .4s ease;display:none;font-weight:600;box-shadow:0 4px 20px rgba(218,54,51,.4)}
+.temp-alert.show{display:flex;align-items:center;gap:10px}
 
-.empty{text-align:center;padding:60px 20px;color:#8b949e;animation:fadeIn .8s ease}
-.empty h2{color:#30363d;margin-bottom:10px}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg3)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--text2)}
 
-/* ---- SCROLLBAR ---- */
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-track{background:#0d1117}
-::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:#484f58}
-
-@media(max-width:600px){
-  .header{flex-direction:column}
-  .header .stats{width:100%;justify-content:center}
-  .grid{padding:12px}
-  .earnings-banner{flex-direction:column;align-items:stretch;text-align:center}
-  .info-grid{grid-template-columns:1fr}
-  .modal-box{max-width:100%;margin:10px}
-}
+@media(max-width:600px){.header{flex-direction:column}.header .stats{width:100%;justify-content:center}.grid{padding:0}.earnings-banner{flex-direction:column;text-align:center}.info-grid{grid-template-columns:1fr}.nav-bar{flex-direction:column}.page{padding:12px}}
 </style>
 </head>
 <body>
 <div class="header">
   <h1>AZERTY TOOL</h1>
-  <div class="stats">
-    <div class="stat-box"><div class="num" id="total">0</div><div class="label">Machines</div></div>
-    <div class="stat-box"><div class="num" id="online">0</div><div class="label">En ligne</div></div>
-    <div class="stat-box"><div class="num" id="offline">0</div><div class="label">Hors ligne</div></div>
-    <div class="stat-box"><div class="num" id="avg-hash">0</div><div class="label">MH/s Total</div></div>
-  </div>
-</div>
-<div class="earnings-banner" id="earnings-banner">
-  <div class="earn-block">
-    <div class="earn-label">Gains estimes / jour</div>
-    <div class="earn-val" id="daily-rvn">-- RVN</div>
-    <div class="earn-sub" id="daily-usd">~$--</div>
-  </div>
-  <div class="earn-block">
-    <div class="earn-label">Gains estimes / mois</div>
-    <div class="earn-val" id="monthly-rvn">-- RVN</div>
-    <div class="earn-sub" id="monthly-usd">~$--</div>
-  </div>
-  <div class="earn-block">
-    <div class="earn-label">Total estime (uptime)</div>
-    <div class="earn-val" id="total-rvn">-- RVN</div>
-    <div class="earn-sub" id="total-usd">~$--</div>
-  </div>
-  <div class="earn-block">
-    <div class="rvn-price">RVN: <span id="rvn-price">--</span>$</div>
-  </div>
-</div>
-<div class="refresh-bar">
-  <span>Mise a jour auto toutes les 10s &mdash; <span id="last-update">...</span></span>
-  <button onclick="loadData()">Actualiser</button>
-</div>
-<div class="grid" id="grid"></div>
-<div class="toast" id="toast"></div>
-
-<!-- MODAL DETAIL MACHINE -->
-<div class="modal-overlay" id="modal" onclick="closeMachineModal(event)">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-top">
-      <h2 id="m-title">Machine</h2>
-      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">&times;</button>
+  <div class="header-right">
+    <div class="stats">
+      <div class="stat-box"><div class="num" id="total">0</div><div class="label">Machines</div></div>
+      <div class="stat-box"><div class="num" id="online">0</div><div class="label">En ligne</div></div>
+      <div class="stat-box"><div class="num" id="offline">0</div><div class="label">Hors ligne</div></div>
+      <div class="stat-box"><div class="num" id="avg-hash">0</div><div class="label">MH/s Total</div></div>
     </div>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">Mode Clair</button>
+  </div>
+</div>
+<div class="earnings-banner">
+  <div class="earn-block"><div class="earn-label">Gains / jour</div><div class="earn-val" id="daily-rvn">-- RVN</div><div class="earn-sub" id="daily-usd">~$--</div></div>
+  <div class="earn-block"><div class="earn-label">Gains / mois</div><div class="earn-val" id="monthly-rvn">-- RVN</div><div class="earn-sub" id="monthly-usd">~$--</div></div>
+  <div class="earn-block"><div class="earn-label">Total (uptime)</div><div class="earn-val" id="total-rvn">-- RVN</div><div class="earn-sub" id="total-usd">~$--</div></div>
+  <div class="earn-block"><div style="font-size:.8rem;color:var(--text2)">RVN: <span id="rvn-price">--</span>$</div></div>
+</div>
+<div class="nav-bar">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('machines')">Machines</button>
+    <button class="nav-tab" onclick="showPage('charts')">Graphiques</button>
+    <button class="nav-tab" onclick="showPage('network')">Reseau</button>
+    <button class="nav-tab" onclick="showPage('logs')">Logs</button>
+  </div>
+  <div class="nav-right">
+    <span id="last-update" style="font-size:.8rem;color:var(--text2)">...</span>
+    <button class="notif-btn" id="notif-btn" onclick="toggleNotifs()">Notifications</button>
+    <button onclick="loadData()">Actualiser</button>
+  </div>
+</div>
+
+<!-- MACHINES PAGE -->
+<div class="page active" id="page-machines"><div class="grid" id="grid"></div></div>
+
+<!-- CHARTS PAGE -->
+<div class="page" id="page-charts">
+  <div class="chart-selector">
+    <select id="chart-machine" onchange="loadCharts()"></select>
+    <select id="chart-period" onchange="loadCharts()">
+      <option value="1">1 heure</option>
+      <option value="6">6 heures</option>
+      <option value="24" selected>24 heures</option>
+      <option value="168">7 jours</option>
+    </select>
+  </div>
+  <div class="chart-container"><div class="chart-title">Hashrate (MH/s)</div><div class="chart-canvas" id="chart-hash"></div></div>
+  <div class="chart-container"><div class="chart-title">Temperature GPU</div><div class="chart-canvas" id="chart-temp"></div></div>
+  <div class="chart-container"><div class="chart-title">Utilisation GPU (%)</div><div class="chart-canvas" id="chart-usage"></div></div>
+</div>
+
+<!-- NETWORK MAP -->
+<div class="page" id="page-network"><div class="network-map" id="net-map"></div></div>
+
+<!-- LOGS PAGE -->
+<div class="page" id="page-logs">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:.85rem;color:var(--text2)">Derniers logs des machines</span>
+    <button onclick="clearLogs()" style="background:none;border:1px solid var(--red2);color:var(--red);padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer">Vider</button>
+  </div>
+  <div id="logs-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="temp-alert" id="temp-alert">ALERTE TEMP &gt; 80 C</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-top"><h2 id="m-title">Machine</h2><button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">&times;</button></div>
     <div class="modal-content" id="m-content"></div>
   </div>
 </div>
-
-<!-- FULLSCREEN SCREENSHOT -->
-<div class="fullscreen-overlay" id="fullscreen" onclick="this.classList.remove('show')">
-  <img id="fs-img" src="" alt="Screenshot">
-</div>
+<div class="fullscreen-overlay" id="fullscreen" onclick="this.classList.remove('show')"><img id="fs-img" src="" alt="Screenshot"></div>
 
 <script>
-const SUPABASE_URL='https://imwdpuumpvecpziigsyz.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
-const HEADERS={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY};
+const SB='https://imwdpuumpvecpziigsyz.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
+const H={'apikey':SK,'Authorization':'Bearer '+SK};
+let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null;
 
-let rvnPriceUsd=0;
-let machinesCache=[];
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+// THEME
+function toggleTheme(){
+  const t=document.body.getAttribute('data-theme')==='light'?'':'light';
+  document.body.setAttribute('data-theme',t);
+  document.getElementById('theme-btn').textContent=t==='light'?'Mode Sombre':'Mode Clair';
+  localStorage.setItem('azerty-theme',t);
 }
+if(localStorage.getItem('azerty-theme')==='light'){document.body.setAttribute('data-theme','light');document.getElementById('theme-btn').textContent='Mode Sombre';}
 
-function closeMachineModal(e){
-  if(e.target===document.getElementById('modal'))
-    document.getElementById('modal').classList.remove('show');
-}
-
-async function supaPatch(hostname,body){
-  await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{
-    method:'PATCH',
-    headers:{...HEADERS,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body:JSON.stringify(body)
-  });
-}
-
-async function sendCommand(hostname,field,value){
-  try{
-    const body={};body[field]=value;
-    await supaPatch(hostname,body);
-    showToast(hostname+' : '+field+'='+value);
-    setTimeout(loadData,2000);
-  }catch(e){showToast('Erreur: '+e.message)}
-}
-
-function setPower(hostname,val,fromModal){
-  if(fromModal) document.getElementById('mpw-val').textContent=val+'%';
-  const cardEl=document.getElementById('pw-'+hostname);
-  if(cardEl) cardEl.textContent=val+'%';
-  sendCommand(hostname,'target_power',parseInt(val));
-}
-
-function stopMiner(hostname){
-  if(!confirm('Arreter le miner sur '+hostname+' ?')) return;
-  sendCommand(hostname,'command','stop');
-}
-
-function restartMiner(hostname){
-  sendCommand(hostname,'command','restart');
-}
-
-function requestScreenshot(hostname){
-  showToast('Capture demandee a '+hostname+'...');
-  sendCommand(hostname,'command','screenshot');
-  setTimeout(()=>openMachineDetail(hostname),8000);
-}
-
-async function deleteScreenshot(hostname){
-  if(!confirm('Supprimer la capture de '+hostname+' ?')) return;
-  try{
-    await supaPatch(hostname,{screenshot_b64:null,screenshot_at:null});
-    showToast('Capture supprimee');
-    openMachineDetail(hostname);
-  }catch(e){showToast('Erreur: '+e.message)}
-}
-
-async function deleteMachine(hostname){
-  if(!confirm('Supprimer la machine '+hostname+' du dashboard ?\nCette action est irreversible.')) return;
-  try{
-    await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{
-      method:'DELETE',
-      headers:{...HEADERS,'Prefer':'return=minimal'}
-    });
-    showToast(hostname+' supprime');
-    document.getElementById('modal').classList.remove('show');
-    loadData();
-  }catch(e){showToast('Erreur: '+e.message)}
-}
-
-function showFullscreen(src){
-  document.getElementById('fs-img').src=src;
-  document.getElementById('fullscreen').classList.add('show');
-}
-
-async function openMachineDetail(hostname){
-  const m=machinesCache.find(x=>x.hostname===hostname);
-  if(!m) return;
-
-  document.getElementById('m-title').innerHTML=esc(hostname)+' <span class="badge m-badge '+(m._online?'online':'offline')+'">'+(m._online?'En ligne':'Hors ligne')+'</span>';
-
-  const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
-  const gpuColor=m.gpu_usage_percent>70?'#f85149':m.gpu_usage_percent>40?'#d29922':'#3fb950';
-  const upH=Math.floor((m.uptime_minutes||0)/60);
-  const upM=(m.uptime_minutes||0)%60;
-  const curPower=m.target_power||100;
-  const lastSeen=m.last_seen?new Date(m.last_seen).toLocaleString('fr-FR'):'--';
-  const h=esc(hostname);
-
-  let screenHtml='<div class="no-screens">Aucune capture disponible</div>';
-  try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:HEADERS});
-    const data=await r.json();
-    if(data.length>0 && data[0].screenshot_b64){
-      const timeStr=data[0].screenshot_at?new Date(data[0].screenshot_at).toLocaleString('fr-FR'):'';
-      const imgSrc='data:image/jpeg;base64,'+data[0].screenshot_b64;
-      screenHtml='<div class="screen-gallery">'
-        +'<div class="screen-item">'
-          +'<img src="'+imgSrc+'" alt="Screenshot" onclick="showFullscreen(this.src)">'
-          +'<div class="screen-meta">'
-            +'<span class="screen-date">'+esc(timeStr)+'</span>'
-            +'<button class="btn-delete" onclick="deleteScreenshot(\''+h+'\')">Supprimer</button>'
-          +'</div>'
-        +'</div>'
-      +'</div>';
+// NOTIFICATIONS
+function toggleNotifs(){
+  if(!notifsEnabled){
+    if('Notification' in window){
+      Notification.requestPermission().then(p=>{
+        notifsEnabled=p==='granted';
+        document.getElementById('notif-btn').classList.toggle('active',notifsEnabled);
+        showToast(notifsEnabled?'Notifications activees':'Notifications refusees');
+      });
     }
+  }else{
+    notifsEnabled=false;
+    document.getElementById('notif-btn').classList.remove('active');
+    showToast('Notifications desactivees');
+  }
+}
+
+function notifyOffline(hostname){
+  if(!notifsEnabled) return;
+  try{new Notification('AZERTY TOOL',{body:hostname+' est hors ligne !',icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚠️</text></svg>'});}catch{}
+}
+
+// SOUND ALERT
+function playTempAlert(){
+  try{
+    if(!alertAudio){const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;g.gain.value=0.3;o.start();setTimeout(()=>{o.frequency.value=600},150);setTimeout(()=>{o.stop();g.disconnect()},400);}
   }catch{}
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+// PAGES
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.target.classList.add('active');
+  if(name==='charts') loadCharts();
+  if(name==='logs') loadLogs();
+  if(name==='network') renderNetwork();
+}
+
+// API
+async function supaPatch(hostname,body){await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{method:'PATCH',headers:{...H,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)})}
+async function sendCommand(hostname,field,value){try{const b={};b[field]=value;await supaPatch(hostname,b);showToast(hostname+': '+field+'='+value);setTimeout(loadData,2000)}catch(e){showToast('Erreur: '+e.message)}}
+function setPower(h,v,modal){if(modal)document.getElementById('mpw-val').textContent=v+'%';const c=document.getElementById('pw-'+h);if(c)c.textContent=v+'%';sendCommand(h,'target_power',parseInt(v))}
+function stopMiner(h){if(!confirm('Arreter le miner sur '+h+' ?'))return;sendCommand(h,'command','stop')}
+function restartMiner(h){sendCommand(h,'command','restart')}
+function requestScreenshot(h){showToast('Capture demandee...');sendCommand(h,'command','screenshot');setTimeout(()=>openMachineDetail(h),8000)}
+async function deleteScreenshot(h){if(!confirm('Supprimer la capture ?'))return;await supaPatch(h,{screenshot_b64:null,screenshot_at:null});showToast('Capture supprimee');openMachineDetail(h)}
+async function deleteMachine(h){if(!confirm('Supprimer '+h+' ?'))return;await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(h),{method:'DELETE',headers:{...H,'Prefer':'return=minimal'}});showToast(h+' supprime');document.getElementById('modal').classList.remove('show');loadData()}
+function showFullscreen(src){document.getElementById('fs-img').src=src;document.getElementById('fullscreen').classList.add('show')}
+
+// MACHINE DETAIL MODAL
+async function openMachineDetail(hostname){
+  const m=machinesCache.find(x=>x.hostname===hostname);if(!m)return;
+  document.getElementById('m-title').innerHTML=esc(hostname)+' <span class="badge '+(m._online?'online':'offline')+'" style="font-size:.7rem">'+(m._online?'En ligne':'Hors ligne')+'</span>';
+  const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
+  const gc=m.gpu_usage_percent>70?'var(--red)':m.gpu_usage_percent>40?'var(--gold)':'var(--green2)';
+  const upH=Math.floor((m.uptime_minutes||0)/60),upM=(m.uptime_minutes||0)%60;
+  const cp=m.target_power||100,h=esc(hostname);
+  const ls=m.last_seen?new Date(m.last_seen).toLocaleString('fr-FR'):'--';
+
+  let screenHtml='<div class="no-screens">Aucune capture</div>';
+  try{const r=await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:H});const d=await r.json();
+    if(d.length>0&&d[0].screenshot_b64){const ts=d[0].screenshot_at?new Date(d[0].screenshot_at).toLocaleString('fr-FR'):'';const src='data:image/jpeg;base64,'+d[0].screenshot_b64;
+      screenHtml='<div class="screen-gallery"><div class="screen-item"><img src="'+src+'" onclick="showFullscreen(this.src)"><div class="screen-meta"><span class="screen-date">'+esc(ts)+'</span><button class="btn-delete" onclick="deleteScreenshot(\''+h+'\')">Supprimer</button></div></div></div>';
+    }}catch{}
 
   document.getElementById('m-content').innerHTML=
-    '<div class="modal-section">'
-      +'<div class="modal-section-title">Informations</div>'
-      +'<div class="info-grid">'
-        +'<div class="info-item"><div class="ii-label">GPU</div><div class="ii-val">'+esc(m.gpu_name||'--')+'</div></div>'
-        +'<div class="info-item"><div class="ii-label">Vendeur</div><div class="ii-val purple">'+esc(m.gpu_vendor||'--')+'</div></div>'
-        +'<div class="info-item"><div class="ii-label">Hashrate</div><div class="ii-val green">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</div></div>'
-        +'<div class="info-item"><div class="ii-label">Temperature</div><div class="ii-val '+(m.gpu_temp_c>70?'red':'')+'">'+m.gpu_temp_c+'&deg;C</div></div>'
-        +'<div class="info-item"><div class="ii-label">Adresse IP</div><div class="ii-val">'+esc(m.ip_address||'--')+'</div></div>'
-        +'<div class="info-item"><div class="ii-label">Uptime</div><div class="ii-val">'+upH+'h '+upM+'m</div></div>'
-        +'<div class="info-item"><div class="ii-label">Derniere MAJ</div><div class="ii-val">'+esc(lastSeen)+'</div></div>'
-        +'<div class="info-item"><div class="ii-label">Puissance</div><div class="ii-val green">'+curPower+'%</div></div>'
-      +'</div>'
-      +'<div style="margin-top:10px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:.8rem;color:#8b949e;margin-bottom:4px"><span>Utilisation GPU</span><span style="color:'+gpuColor+'">'+m.gpu_usage_percent+'%</span></div>'
-        +'<div class="modal-gpu-bar"><div class="fill" style="width:'+m.gpu_usage_percent+'%;background:'+gpuColor+'"></div></div>'
-      +'</div>'
-    +'</div>'
-
-    +'<div class="modal-section">'
-      +'<div class="modal-section-title">Gains estimes</div>'
-      +'<div class="info-grid">'
-        +'<div class="info-item"><div class="ii-label">RVN / jour</div><div class="ii-val gold">'+e.dailyRvn.toFixed(1)+' RVN</div></div>'
-        +'<div class="info-item"><div class="ii-label">$ / jour</div><div class="ii-val gold">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div></div>'
-        +'<div class="info-item"><div class="ii-label">RVN total (uptime)</div><div class="ii-val gold">'+e.totalRvn.toFixed(0)+' RVN</div></div>'
-        +'<div class="info-item"><div class="ii-label">$ total</div><div class="ii-val gold">$'+(e.totalRvn*rvnPriceUsd).toFixed(2)+'</div></div>'
-      +'</div>'
-    +'</div>'
-
-    +'<div class="modal-section">'
-      +'<div class="modal-section-title">Captures d\'ecran</div>'
-      +screenHtml
-    +'</div>'
-
-    +'<div class="modal-section">'
-      +'<div class="modal-section-title">Controles</div>'
-      +'<div class="modal-controls">'
-        +'<div class="modal-power-row">'
-          +'<label>Puissance</label>'
-          +'<input type="range" min="10" max="100" step="5" value="'+curPower+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'">'
-          +'<span class="mpw-val" id="mpw-val">'+curPower+'%</span>'
-        +'</div>'
-        +'<div class="modal-btns">'
-          +'<button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button>'
-          +'<button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button>'
-          +'<button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button>'
-        +'</div>'
-      +'</div>'
-      +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button>'
-    +'</div>';
-
+    '<div class="modal-section"><div class="modal-section-title">Informations</div><div class="info-grid">'
+    +'<div class="info-item"><div class="ii-label">GPU</div><div class="ii-val">'+esc(m.gpu_name||'--')+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">Vendeur</div><div class="ii-val purple">'+esc(m.gpu_vendor||'--')+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">Hashrate</div><div class="ii-val green">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</div></div>'
+    +'<div class="info-item"><div class="ii-label">Temperature</div><div class="ii-val '+(m.gpu_temp_c>70?'red':'')+'">'+m.gpu_temp_c+'&deg;C</div></div>'
+    +'<div class="info-item"><div class="ii-label">IP</div><div class="ii-val">'+esc(m.ip_address||'--')+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">Uptime</div><div class="ii-val">'+upH+'h '+upM+'m</div></div>'
+    +'<div class="info-item"><div class="ii-label">Derniere MAJ</div><div class="ii-val">'+esc(ls)+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">Puissance</div><div class="ii-val green">'+cp+'%</div></div>'
+    +'</div><div style="margin-top:10px"><div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--text2);margin-bottom:4px"><span>GPU</span><span style="color:'+gc+'">'+m.gpu_usage_percent+'%</span></div>'
+    +'<div class="modal-gpu-bar"><div class="fill" style="width:'+m.gpu_usage_percent+'%;background:'+gc+'"></div></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">Gains</div><div class="info-grid">'
+    +'<div class="info-item"><div class="ii-label">RVN/jour</div><div class="ii-val gold">'+e.dailyRvn.toFixed(1)+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">$/jour</div><div class="ii-val gold">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">RVN total</div><div class="ii-val gold">'+e.totalRvn.toFixed(0)+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">$ total</div><div class="ii-val gold">$'+(e.totalRvn*rvnPriceUsd).toFixed(2)+'</div></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">Captures</div>'+screenHtml+'</div>'
+    +'<div class="modal-section"><div class="modal-section-title">Controles</div><div class="modal-controls">'
+    +'<div class="power-row" style="margin-bottom:12px"><label style="font-size:.85rem;color:var(--text2);min-width:80px">Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'"><span id="mpw-val" style="font-size:1rem;font-weight:700;color:var(--green);min-width:50px;text-align:right">'+cp+'%</span></div>'
+    +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div>'
+    +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button></div>';
   document.getElementById('modal').classList.add('show');
 }
 
-async function fetchRvnPrice(){
+// CHARTS
+async function loadCharts(){
+  const sel=document.getElementById('chart-machine');
+  if(!sel.options.length){machinesCache.forEach(m=>{const o=document.createElement('option');o.value=m.hostname;o.textContent=m.hostname;sel.appendChild(o)});if(!sel.options.length)return;}
+  const host=sel.value,hours=parseInt(document.getElementById('chart-period').value);
+  const since=new Date(Date.now()-hours*3600000).toISOString();
   try{
-    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ravencoin&vs_currencies=usd');
-    const d=await r.json();
-    if(d.ravencoin&&d.ravencoin.usd) rvnPriceUsd=d.ravencoin.usd;
+    const r=await fetch(SB+'/rest/v1/stats_history?hostname=eq.'+encodeURIComponent(host)+'&recorded_at=gte.'+since+'&order=recorded_at&select=hashrate_mhs,gpu_temp_c,gpu_usage_percent,recorded_at',{headers:H});
+    const data=await r.json();
+    if(!Array.isArray(data)||!data.length){['chart-hash','chart-temp','chart-usage'].forEach(id=>document.getElementById(id).innerHTML='<div style="text-align:center;padding:60px;color:var(--text2)">Pas de donnees</div>');return;}
+    renderChart('chart-hash',data.map(d=>({t:new Date(d.recorded_at),v:d.hashrate_mhs||0})),'var(--green)',0);
+    renderChart('chart-temp',data.map(d=>({t:new Date(d.recorded_at),v:d.gpu_temp_c||0})),'var(--red)',0);
+    renderChart('chart-usage',data.map(d=>({t:new Date(d.recorded_at),v:d.gpu_usage_percent||0})),'var(--blue)',0,100);
   }catch{}
 }
 
-const RVN_PER_MHS_PER_DAY=15;
+function renderChart(containerId,points,color,minY,maxY){
+  const el=document.getElementById(containerId);if(!points.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text2)">Pas de donnees</div>';return;}
+  const W=el.clientWidth||700,HH=200,pad={t:20,r:20,b:30,l:50};
+  const iw=W-pad.l-pad.r,ih=HH-pad.t-pad.b;
+  const vals=points.map(p=>p.v);
+  const mn=minY!==undefined?minY:Math.min(...vals);
+  const mx=maxY!==undefined?maxY:Math.max(...vals)*1.1||1;
+  const t0=points[0].t.getTime(),t1=points[points.length-1].t.getTime()||t0+1;
+  const sx=i=>(pad.l+((points[i].t.getTime()-t0)/(t1-t0))*iw);
+  const sy=i=>(pad.t+ih-(((points[i].v-mn)/(mx-mn))*ih));
 
-function estimateEarnings(hashrateMhs,uptimeMinutes){
-  const dailyRvn=hashrateMhs*RVN_PER_MHS_PER_DAY;
-  const uptimeDays=uptimeMinutes/1440;
-  const totalRvn=dailyRvn*uptimeDays;
-  return{dailyRvn,totalRvn};
+  let path='M'+sx(0)+' '+sy(0);
+  for(let i=1;i<points.length;i++) path+=' L'+sx(i)+' '+sy(i);
+  let area=path+' L'+sx(points.length-1)+' '+(pad.t+ih)+' L'+sx(0)+' '+(pad.t+ih)+' Z';
+
+  const gridLines=5;let gridHtml='';
+  for(let i=0;i<=gridLines;i++){
+    const y=pad.t+(ih/gridLines)*i;
+    const val=(mx-mn)*(1-i/gridLines)+mn;
+    gridHtml+='<line x1="'+pad.l+'" y1="'+y+'" x2="'+(W-pad.r)+'" y2="'+y+'" stroke="var(--border2)" stroke-dasharray="4"/>';
+    gridHtml+='<text x="'+(pad.l-8)+'" y="'+(y+4)+'" text-anchor="end" class="chart-label">'+val.toFixed(1)+'</text>';
+  }
+  const nLabels=Math.min(6,points.length);
+  for(let i=0;i<nLabels;i++){
+    const idx=Math.floor(i*points.length/nLabels);
+    gridHtml+='<text x="'+sx(idx)+'" y="'+(HH-5)+'" text-anchor="middle" class="chart-label">'+points[idx].t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</text>';
+  }
+
+  let dots='';points.forEach((_,i)=>{dots+='<circle cx="'+sx(i)+'" cy="'+sy(i)+'" class="chart-dot" fill="'+color+'"><title>'+points[i].v.toFixed(2)+' - '+points[i].t.toLocaleTimeString('fr-FR')+'</title></circle>';});
+
+  el.innerHTML='<svg class="chart-svg" viewBox="0 0 '+W+' '+HH+'" preserveAspectRatio="none">'+gridHtml
+    +'<path d="'+area+'" fill="'+color+'" class="chart-area"/>'
+    +'<path d="'+path+'" stroke="'+color+'" class="chart-line"/>'
+    +dots+'</svg>';
 }
 
+// NETWORK MAP
+function renderNetwork(){
+  const groups={};
+  machinesCache.forEach(m=>{
+    const ip=m.ip_address||'0.0.0.0';
+    const subnet=ip.split('.').slice(0,3).join('.')+'.0/24';
+    if(!groups[subnet]) groups[subnet]=[];
+    groups[subnet].push(m);
+  });
+  const map=document.getElementById('net-map');
+  if(!Object.keys(groups).length){map.innerHTML='<div class="empty"><h2>Aucun reseau</h2></div>';return;}
+  const colors=['var(--blue)','var(--purple)','var(--green)','var(--gold)','var(--red)'];
+  let i=0;
+  map.innerHTML=Object.entries(groups).map(([subnet,machines])=>{
+    const c=colors[i++%colors.length];
+    return '<div class="network-group" style="animation-delay:'+(i*0.1)+'s"><div class="network-title"><span class="net-icon" style="background:'+c+'"></span>Reseau '+subnet+' ('+machines.length+')</div>'
+      +machines.map(m=>'<div class="net-machine" onclick="openMachineDetail(\''+esc(m.hostname)+'\')" style="cursor:pointer">'
+        +'<span class="net-dot '+(m._online?'on':'off')+'"></span>'
+        +'<div class="net-info"><div class="net-name">'+esc(m.hostname)+'</div><div class="net-ip">'+esc(m.ip_address||'--')+'</div></div>'
+        +'<span class="net-hash">'+(m.hashrate_mhs||0).toFixed(1)+' MH/s</span></div>').join('')
+      +'</div>';
+  }).join('');
+}
+
+// LOGS
+async function loadLogs(){
+  try{
+    const r=await fetch(SB+'/rest/v1/machine_logs?order=created_at.desc&limit=100',{headers:H});
+    const data=await r.json();
+    const el=document.getElementById('logs-list');
+    if(!Array.isArray(data)||!data.length){el.innerHTML='<div class="logs-empty">Aucun log</div>';return;}
+    el.innerHTML=data.map(l=>'<div class="log-entry">'
+      +'<span class="log-time">'+(l.created_at?new Date(l.created_at).toLocaleString('fr-FR'):'')+'</span>'
+      +'<span class="log-host">'+esc(l.hostname)+'</span>'
+      +'<span class="log-level '+(l.level||'info')+'">'+esc(l.level||'info')+'</span>'
+      +'<span class="log-msg">'+esc(l.message)+'</span></div>').join('');
+  }catch(e){document.getElementById('logs-list').innerHTML='<div class="logs-empty">Erreur: '+esc(e.message)+'</div>'}
+}
+
+async function clearLogs(){
+  if(!confirm('Vider tous les logs ?'))return;
+  await fetch(SB+'/rest/v1/machine_logs?id=gt.0',{method:'DELETE',headers:{...H,'Prefer':'return=minimal'}});
+  showToast('Logs vides');loadLogs();
+}
+
+// PRICE
+async function fetchRvnPrice(){try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ravencoin&vs_currencies=usd');const d=await r.json();if(d.ravencoin&&d.ravencoin.usd) rvnPriceUsd=d.ravencoin.usd}catch{}}
+const RVN_PER_MHS_PER_DAY=15;
+function estimateEarnings(h,u){const d=h*RVN_PER_MHS_PER_DAY;return{dailyRvn:d,totalRvn:d*(u/1440)}}
+
+// MAIN LOAD
 async function loadData(){
   if(rvnPriceUsd===0) await fetchRvnPrice();
   try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command&order=hostname',{headers:HEADERS});
+    const r=await fetch(SB+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command&order=hostname',{headers:H});
     const data=await r.json();
-    if(!Array.isArray(data)){
-      document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur API</h2><p>'+(data.message||JSON.stringify(data))+'</p></div>';
-      return;
-    }
-    machinesCache=data;
-    render(data);
-  }catch(e){
-    document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur de connexion</h2><p>'+e.message+'</p></div>';
-  }
+    if(!Array.isArray(data)){document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur</h2><p>'+(data.message||'')+'</p></div>';return;}
+    machinesCache=data;render(data);
+  }catch(e){document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur</h2><p>'+e.message+'</p></div>'}
 }
 
 function render(machines){
   const now=Date.now();
-  if(!machines||!machines.length){machines=[];}
-  machines.forEach(m=>{
-    const lastSeen=new Date(m.last_seen).getTime();
-    m._online=(now-lastSeen)<300000;
-  });
+  machines.forEach(m=>{m._online=(now-new Date(m.last_seen).getTime())<300000});
 
-  const total=machines.length;
-  const onlineCount=machines.filter(m=>m._online).length;
-  const offlineCount=total-onlineCount;
-  const totalHash=machines.reduce((s,m)=>s+(m.hashrate_mhs||0),0);
-
+  const total=machines.length,onC=machines.filter(m=>m._online).length;
   document.getElementById('total').textContent=total;
-  document.getElementById('online').textContent=onlineCount;
-  document.getElementById('offline').textContent=offlineCount;
-  document.getElementById('avg-hash').textContent=totalHash.toFixed(1);
+  document.getElementById('online').textContent=onC;
+  document.getElementById('offline').textContent=total-onC;
+  document.getElementById('avg-hash').textContent=machines.reduce((s,m)=>s+(m.hashrate_mhs||0),0).toFixed(1);
   document.getElementById('last-update').textContent=new Date().toLocaleTimeString('fr-FR');
 
-  let globalDailyRvn=0,globalTotalRvn=0;
-  machines.forEach(m=>{
-    const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
-    globalDailyRvn+=e.dailyRvn;
-    globalTotalRvn+=e.totalRvn;
-  });
-
-  document.getElementById('daily-rvn').textContent=globalDailyRvn.toFixed(1)+' RVN';
-  document.getElementById('daily-usd').textContent='~$'+(globalDailyRvn*rvnPriceUsd).toFixed(2);
-  document.getElementById('monthly-rvn').textContent=(globalDailyRvn*30).toFixed(0)+' RVN';
-  document.getElementById('monthly-usd').textContent='~$'+(globalDailyRvn*30*rvnPriceUsd).toFixed(2);
-  document.getElementById('total-rvn').textContent=globalTotalRvn.toFixed(1)+' RVN';
-  document.getElementById('total-usd').textContent='~$'+(globalTotalRvn*rvnPriceUsd).toFixed(2);
+  let gD=0,gT=0;
+  machines.forEach(m=>{const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);gD+=e.dailyRvn;gT+=e.totalRvn});
+  document.getElementById('daily-rvn').textContent=gD.toFixed(1)+' RVN';
+  document.getElementById('daily-usd').textContent='~$'+(gD*rvnPriceUsd).toFixed(2);
+  document.getElementById('monthly-rvn').textContent=(gD*30).toFixed(0)+' RVN';
+  document.getElementById('monthly-usd').textContent='~$'+(gD*30*rvnPriceUsd).toFixed(2);
+  document.getElementById('total-rvn').textContent=gT.toFixed(1)+' RVN';
+  document.getElementById('total-usd').textContent='~$'+(gT*rvnPriceUsd).toFixed(2);
   document.getElementById('rvn-price').textContent=rvnPriceUsd.toFixed(4);
 
+  // Notifications offline + temp alert
+  let tempAlert=false;
+  machines.forEach(m=>{
+    if(prevOnline[m.hostname]===true && !m._online) notifyOffline(m.hostname);
+    prevOnline[m.hostname]=m._online;
+    if(m.gpu_temp_c>80) tempAlert=true;
+  });
+  const alertEl=document.getElementById('temp-alert');
+  if(tempAlert){if(!alertEl.classList.contains('show')){alertEl.classList.add('show');playTempAlert();setTimeout(()=>alertEl.classList.remove('show'),5000)}}
+
   const grid=document.getElementById('grid');
-  if(total===0){
-    grid.innerHTML='<div class="empty"><h2>Aucune machine detectee</h2><p>Lancez AZERTY_TOOL.exe sur vos machines</p></div>';
-    return;
-  }
-
+  if(!total){grid.innerHTML='<div class="empty"><h2>Aucune machine</h2><p>Lancez AZERTY_TOOL.exe</p></div>';return;}
   grid.innerHTML=machines.map((m,i)=>{
-    const status=m._online?'online':'offline';
-    const statusLabel=m._online?'En ligne':'Hors ligne';
-    const gpuColor=m.gpu_usage_percent>70?'#f85149':m.gpu_usage_percent>40?'#d29922':'#3fb950';
-    const upH=Math.floor((m.uptime_minutes||0)/60);
-    const upM=(m.uptime_minutes||0)%60;
+    const st=m._online?'online':'offline',sl=m._online?'En ligne':'Hors ligne';
+    const gc=m.gpu_usage_percent>70?'var(--red)':m.gpu_usage_percent>40?'var(--gold)':'var(--green2)';
     const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
-    const curPower=m.target_power||100;
-    const h=esc(m.hostname);
-    const delay=(i*0.08).toFixed(2);
-
-    return '<div class="card" style="animation-delay:'+delay+'s" onclick="openMachineDetail(\''+h+'\')">'
-      +'<div class="card-header"><span class="card-name">'+h+'</span><span class="badge '+status+'">'+statusLabel+'</span></div>'
+    const cp=m.target_power||100,h=esc(m.hostname),d=(i*0.08).toFixed(2);
+    const upH=Math.floor((m.uptime_minutes||0)/60),upM=(m.uptime_minutes||0)%60;
+    return '<div class="card" style="animation-delay:'+d+'s" onclick="openMachineDetail(\''+h+'\')">'
+      +'<div class="card-header"><span class="card-name">'+h+'</span><span class="badge '+st+'">'+sl+'</span></div>'
       +'<div class="card-row"><span class="k">GPU</span><span class="v">'+esc(m.gpu_name||'--')+'</span></div>'
-      +'<div class="card-row"><span class="k">Hashrate</span><span class="v" style="color:#3fb950">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</span></div>'
-      +'<div class="card-row"><span class="k">GPU</span><span class="v" style="color:'+gpuColor+'">'+m.gpu_usage_percent+'%</span></div>'
-      +'<div class="gpu-bar"><div class="fill" style="--bar-w:'+m.gpu_usage_percent+'%;width:'+m.gpu_usage_percent+'%;background:'+gpuColor+'"></div></div>'
-      +'<div class="card-row"><span class="k">Temp</span><span class="v">'+m.gpu_temp_c+'&deg;C</span></div>'
+      +'<div class="card-row"><span class="k">Hashrate</span><span class="v" style="color:var(--green2)">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</span></div>'
+      +'<div class="card-row"><span class="k">GPU</span><span class="v" style="color:'+gc+'">'+m.gpu_usage_percent+'%</span></div>'
+      +'<div class="gpu-bar"><div class="fill" style="--bar-w:'+m.gpu_usage_percent+'%;width:'+m.gpu_usage_percent+'%;background:'+gc+'"></div></div>'
+      +'<div class="card-row"><span class="k">Temp</span><span class="v '+(m.gpu_temp_c>70?'red':'')+'">'+m.gpu_temp_c+'&deg;C</span></div>'
       +'<div class="card-row"><span class="k">Uptime</span><span class="v">'+upH+'h '+upM+'m</span></div>'
-      +'<div class="card-earnings">'
-        +'<div class="ce-block"><div class="ce-val">'+e.dailyRvn.toFixed(1)+'</div><div class="ce-label">RVN/jour</div></div>'
-        +'<div class="ce-block"><div class="ce-val">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div><div class="ce-label">$/jour</div></div>'
-      +'</div>'
-      +'<div class="card-controls" onclick="event.stopPropagation()">'
-        +'<div class="power-row">'
-          +'<label>Puissance</label>'
-          +'<input type="range" min="10" max="100" step="5" value="'+curPower+'" onchange="setPower(\''+h+'\',this.value,false)" oninput="document.getElementById(\'pw-'+h+'\').textContent=this.value+\'%\'">'
-          +'<span class="power-val" id="pw-'+h+'">'+curPower+'%</span>'
-        +'</div>'
-        +'<div class="ctrl-btns">'
-          +'<button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button>'
-          +'<button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button>'
-          +'<button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button>'
-        +'</div>'
-      +'</div>'
-    +'</div>';
+      +'<div class="card-earnings"><div class="ce-block"><div class="ce-val">'+e.dailyRvn.toFixed(1)+'</div><div class="ce-label">RVN/jour</div></div><div class="ce-block"><div class="ce-val">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div><div class="ce-label">$/jour</div></div></div>'
+      +'<div class="card-controls" onclick="event.stopPropagation()"><div class="power-row"><label>Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,false)" oninput="document.getElementById(\'pw-'+h+'\').textContent=this.value+\'%\'"><span class="power-val" id="pw-'+h+'">'+cp+'%</span></div>'
+      +'<div class="ctrl-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div></div>';
   }).join('');
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
-fetchRvnPrice();
-setInterval(fetchRvnPrice,300000);
-loadData();
-setInterval(loadData,10000);
+fetchRvnPrice();setInterval(fetchRvnPrice,300000);
+loadData();setInterval(loadData,10000);
 </script>
 </body>
 </html>
