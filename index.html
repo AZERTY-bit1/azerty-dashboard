@@ -287,6 +287,17 @@ h1{font-size:1.2rem}
 <div class="temp-alert" id="temp-alert">ALERTE TEMP &gt; 80 C</div>
 
 <!-- MODAL -->
+<div class="login-overlay" id="login-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column">
+  <div style="text-align:center;animation:fadeInUp .6s ease">
+    <div style="font-size:2.5rem;color:var(--green);font-weight:900;letter-spacing:4px;margin-bottom:30px">AZERTY TOOL</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px;min-width:320px">
+      <div style="font-size:1rem;color:var(--text2);margin-bottom:20px">Entrez le code d'acces</div>
+      <input type="password" id="login-code" placeholder="Code..." style="width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:1.1rem;text-align:center;letter-spacing:4px;outline:none" onkeydown="if(event.key==='Enter')checkLogin()">
+      <div id="login-error" style="color:var(--red);font-size:.8rem;margin-top:10px;display:none">Code incorrect</div>
+      <button onclick="checkLogin()" style="margin-top:16px;width:100%;padding:12px;border-radius:8px;border:none;background:var(--green3);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:1px">ENTRER</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-top"><h2 id="m-title">Machine</h2><button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">&times;</button></div>
@@ -300,6 +311,21 @@ const SB='https://imwdpuumpvecpziigsyz.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
 const H={'apikey':SK,'Authorization':'Bearer '+SK};
 let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null;
+
+// LOGIN
+const ACCESS_CODE='AZERTY8806';
+function checkLogin(){
+  const v=document.getElementById('login-code').value.trim();
+  if(v===ACCESS_CODE){
+    document.getElementById('login-overlay').style.display='none';
+    sessionStorage.setItem('azerty-auth','1');
+  }else{
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-code').style.animation='shake .4s';
+    setTimeout(()=>document.getElementById('login-code').style.animation='',400);
+  }
+}
+if(sessionStorage.getItem('azerty-auth')==='1')document.getElementById('login-overlay').style.display='none';
 
 // THEME
 function toggleTheme(){
@@ -361,7 +387,7 @@ function stopMiner(h){if(!confirm('Arreter le miner sur '+h+' ?'))return;sendCom
 function restartMiner(h){sendCommand(h,'command','restart')}
 function requestScreenshot(h){showToast('Capture demandee...');sendCommand(h,'command','screenshot');setTimeout(()=>openMachineDetail(h),8000)}
 async function deleteScreenshot(h){if(!confirm('Supprimer la capture ?'))return;await supaPatch(h,{screenshot_b64:null,screenshot_at:null});showToast('Capture supprimee');openMachineDetail(h)}
-async function deleteMachine(h){if(!confirm('Supprimer '+h+' ?'))return;await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(h),{method:'DELETE',headers:{...H,'Prefer':'return=minimal'}});showToast(h+' supprime');document.getElementById('modal').classList.remove('show');loadData()}
+async function deleteMachine(h){if(!confirm('Supprimer '+h+' ? Cette action est irreversible.'))return;await supaPatch(h,{hostname:h+'_DELETED_'+Date.now(),status:'deleted',hashrate_mhs:0,gpu_temp:0,gpu_usage_percent:0,screenshot_b64:null,screenshot_at:null,command:null,target_power:0});showToast(h+' supprime');document.getElementById('modal').classList.remove('show');loadData()}
 function showFullscreen(src){document.getElementById('fs-img').src=src;document.getElementById('fullscreen').classList.add('show')}
 
 // MACHINE DETAIL MODAL
@@ -553,7 +579,7 @@ async function loadData(){
     const r=await fetch(SB+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command&order=hostname',{headers:H});
     const data=await r.json();
     if(!Array.isArray(data)){document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur</h2><p>'+(data.message||'')+'</p></div>';return;}
-    machinesCache=data;render(data);
+    machinesCache=data.filter(m=>!m.hostname.includes('_DELETED_')&&m.status!=='deleted');render(machinesCache);
   }catch(e){document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur</h2><p>'+e.message+'</p></div>'}
 }
 
