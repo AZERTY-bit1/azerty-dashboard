@@ -387,7 +387,7 @@ function stopMiner(h){if(!confirm('Arreter le miner sur '+h+' ?'))return;sendCom
 function restartMiner(h){sendCommand(h,'command','restart')}
 function requestScreenshot(h){showToast('Capture demandee...');sendCommand(h,'command','screenshot');setTimeout(()=>openMachineDetail(h),8000)}
 async function deleteScreenshot(h){if(!confirm('Supprimer la capture ?'))return;await supaPatch(h,{screenshot_b64:null,screenshot_at:null});showToast('Capture supprimee');openMachineDetail(h)}
-async function deleteMachine(h){if(!confirm('Supprimer '+h+' ? Cette action est irreversible.'))return;await supaPatch(h,{hostname:h+'_DELETED_'+Date.now(),status:'deleted',hashrate_mhs:0,gpu_temp:0,gpu_usage_percent:0,screenshot_b64:null,screenshot_at:null,command:null,target_power:0});showToast(h+' supprime');document.getElementById('modal').classList.remove('show');loadData()}
+async function deleteMachine(h){if(!confirm('Supprimer '+h+' ? Cette action est irreversible.'))return;await supaPatch(h,{hostname:h+'_DELETED_'+Date.now(),status:'deleted',hashrate_mhs:0,gpu_temp_c:0,gpu_usage_percent:0,screenshot_b64:null,screenshot_at:null,command:null,target_power:0});showToast(h+' supprime');document.getElementById('modal').classList.remove('show');loadData()}
 function showFullscreen(src){document.getElementById('fs-img').src=src;document.getElementById('fullscreen').classList.add('show')}
 
 // MACHINE DETAIL MODAL
