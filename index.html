@@ -629,7 +629,7 @@ function startLiveView(hostname){
     }catch{}
   },3000);
 }
-function stopLiveView(){if(liveViewInterval){clearInterval(liveViewInterval);liveViewInterval=null;liveViewHost=null;showToast('⏹ Live View arrete');const el=document.getElementById('live-screen');if(el)el.innerHTML='<div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour voir l\\'ecran en direct</div>';}}
+function stopLiveView(){if(liveViewInterval){clearInterval(liveViewInterval);liveViewInterval=null;liveViewHost=null;showToast('⏹ Live View arrete');const el=document.getElementById('live-screen');if(el)el.innerHTML='<div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour demarrer</div>';}}
 
 // SCREENSHOT GALLERY
 async function loadScreenGallery(hostname){
@@ -709,7 +709,6 @@ function renderFileList(raw,currentPath,hostname){
   }).join('');
 }
 function formatBytes(b){if(b===0)return '0 B';const k=1024,s=['B','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return (b/Math.pow(k,i)).toFixed(i?1:0)+' '+s[i];}
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 // PROCESS MANAGER
 async function listProcesses(hostname){
