@@ -381,7 +381,24 @@ function showPage(name){
 
 // API
 async function supaPatch(hostname,body){await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname),{method:'PATCH',headers:{...H,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(body)})}
-async function sendCommand(hostname,field,value){try{const b={};b[field]=value;await supaPatch(hostname,b);showToast(hostname+': '+field+'='+value);setTimeout(loadData,2000)}catch(e){showToast('Erreur: '+e.message)}}
+async function sendCommand(hostname,field,value){
+  const b={};b[field]=value;
+  showToast('⏳ '+hostname+': envoi '+field+'='+value);
+  const maxMs=180000,interval=4000;let elapsed=0,delivered=false;
+  while(elapsed<maxMs&&!delivered){
+    try{await supaPatch(hostname,b)}catch(e){showToast('Erreur: '+e.message);return false}
+    await new Promise(r=>setTimeout(r,Math.min(interval,maxMs-elapsed)));
+    elapsed+=interval;
+    try{
+      const r=await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select='+encodeURIComponent(field),{headers:H});
+      const d=await r.json();
+      if(d.length&&(d[0][field]===null||d[0][field]===''||d[0][field]===0)){delivered=true}
+    }catch{}
+  }
+  if(delivered){showToast('✅ '+hostname+': commande recue!')}else{showToast('⚠️ '+hostname+': timeout 3min, commande peut-etre pas recue')}
+  setTimeout(loadData,1000);
+  return delivered
+}
 function setPower(h,v,modal){if(modal)document.getElementById('mpw-val').textContent=v+'%';const c=document.getElementById('pw-'+h);if(c)c.textContent=v+'%';sendCommand(h,'target_power',parseInt(v))}
 function stopMiner(h){if(!confirm('Arreter le miner sur '+h+' ?'))return;sendCommand(h,'command','stop')}
 function restartMiner(h){sendCommand(h,'command','restart')}
@@ -657,7 +674,7 @@ async function execCmd(hostname){
         const d=await r.json();
         if(d.length>0&&d[0].message){
           const msg=d[0].message;
-          if(msg.startsWith('CMD:'+cmd.substring(0,20))||attempts>15){
+          if(msg.startsWith('CMD:'+cmd.substring(0,20))||attempts>60){
             clearInterval(poll);
             output.textContent='> '+cmd+'\n'+msg.replace(/^CMD:[^\n]*\n/,'');
           }
@@ -805,8 +822,8 @@ async function listProcesses(hostname){
         output.textContent=d[0].message.replace(/^CMD:[^\n]*\n/,'');
       }
     }catch{}
-    if(attempts>20){clearInterval(poll);output.textContent+='Timeout';}
-  },1500);
+    if(attempts>60){clearInterval(poll);output.textContent+='⚠️ Pas de reponse apres 3 minutes';}
+  },3000);
 }
 
 function killProcess(hostname){
@@ -873,7 +890,7 @@ function getActivity(h){showToast('👁 Lecture activite...');sendCommand(h,'com
 // GENERIC CMD RESULT POLLER
 function pollCmdResult(h,outputId){
   const output=document.getElementById(outputId);
-  output.style.display='block';output.textContent='Chargement...';
+  output.style.display='block';output.textContent='⏳ Attente reponse...';
   const before=new Date().toISOString();
   let attempts=0;
   const poll=setInterval(async()=>{
@@ -883,8 +900,8 @@ function pollCmdResult(h,outputId){
       const d=await r.json();
       if(d.length&&d[0].message){clearInterval(poll);output.textContent=d[0].message.replace(/^CMD:[^\n]*\n/,'');}
     }catch{}
-    if(attempts>20){clearInterval(poll);output.textContent+=' Timeout';}
-  },1500);
+    if(attempts>60){clearInterval(poll);output.textContent='⚠️ Pas de reponse apres 3 minutes';}
+  },3000);
 }
 
 // WOL (Wake-on-LAN via another online machine)
