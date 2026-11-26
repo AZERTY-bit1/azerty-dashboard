@@ -773,8 +773,8 @@ async function browseFiles(hostname){
         renderFileList(raw,path,hostname);
       }
     }catch{}
-    if(attempts>20){clearInterval(poll);output.innerHTML='<div style="padding:12px;color:var(--red)">⏱ Timeout</div>';}
-  },1500);
+    if(attempts>40){clearInterval(poll);output.innerHTML='<div style="padding:12px;color:var(--red)">⏱ Timeout</div>';}
+  },3000);
 }
 function renderFileList(raw,currentPath,hostname){
   const output=document.getElementById('file-list');
