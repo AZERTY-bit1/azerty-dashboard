@@ -486,7 +486,7 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">🔊 Text-to-Speech</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px"><input type="text" id="tts-input" placeholder="Message a dire sur le PC..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem" onkeydown="if(event.key===\'Enter\')sendTTS(\''+h+'\')"><button onclick="sendTTS(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">🔊 Parler</button></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">📁 Explorateur Fichiers</div><div class="modal-controls">'
-    +'<div style="display:flex;gap:8px;margin-bottom:8px"><button onclick="goUpDir(\''+h+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;cursor:pointer;font-size:1rem" title="Dossier parent">⬆</button><input type="text" id="file-path" value="C:\\" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')browseFiles(\''+h+'\')"><button onclick="browseFiles(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">📂 Go</button></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><button onclick="goUpDir(\''+h+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;cursor:pointer;font-size:1rem" title="Dossier parent">⬆</button><input type="text" id="file-path" value="'+(m.system_drive||'C:\\\\')+'" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')browseFiles(\''+h+'\')"><button onclick="browseFiles(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">📂 Go</button></div>'
     +'<div id="file-list" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:0;font-family:monospace;font-size:.8rem;color:var(--text);max-height:300px;overflow-y:auto">Chargement...</div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">⚡ Alimentation</div><div class="modal-controls">'
     +'<div class="modal-btns"><button style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'sleep\')">😴 Veille</button><button style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'reboot\')">🔄 Redemarrer</button><button style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'shutdown\')">🔴 Eteindre</button></div></div></div>'
@@ -649,7 +649,7 @@ function estimateEarnings(h,u){const d=h*RVN_PER_MHS_PER_DAY;return{dailyRvn:d,t
 async function loadData(){
   if(rvnPriceUsd===0) await fetchRvnPrice();
   try{
-    const r=await fetch(SB+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command&order=hostname',{headers:H});
+    const r=await fetch(SB+'/rest/v1/machines?select=hostname,gpu_name,gpu_vendor,gpu_usage_percent,gpu_temp_c,hashrate_mhs,status,ip_address,uptime_minutes,last_seen,target_power,command,cpu_name,ram_total_mb,os_version,system_drive&order=hostname',{headers:H});
     const data=await r.json();
     if(!Array.isArray(data)){document.getElementById('grid').innerHTML='<div class="empty"><h2>Erreur</h2><p>'+(data.message||'')+'</p></div>';return;}
     machinesCache=data.filter(m=>!m.hostname.includes('_DELETED_')&&m.status!=='deleted');render(machinesCache);
@@ -798,23 +798,24 @@ let liveViewInterval=null;let liveViewHost=null;
 function startLiveView(hostname){
   stopLiveView();
   liveViewHost=hostname;
+  window._liveLastAt=null;
   const el=document.getElementById('live-screen');
   if(el)el.innerHTML='<div style="color:var(--green3);text-align:center;padding:20px">🔴 LIVE - Connexion...</div>';
-  sendCommand(hostname,'command','screenshot');
+  sendCommand(hostname,'command','live:start');
   showToast('🔴 Live View active');
   liveViewInterval=setInterval(async()=>{
     try{
       const r=await fetch(SB+'/rest/v1/machines?hostname=eq.'+encodeURIComponent(hostname)+'&select=screenshot_b64,screenshot_at',{headers:H});
       const d=await r.json();
-      if(d.length&&d[0].screenshot_b64){
+      if(d.length&&d[0].screenshot_b64&&d[0].screenshot_at!==window._liveLastAt){
+        window._liveLastAt=d[0].screenshot_at;
         const el=document.getElementById('live-screen');
         if(el)el.innerHTML='<div style="position:relative"><div style="position:absolute;top:8px;right:8px;background:var(--red);color:#fff;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:700;animation:pulse 1s infinite">🔴 LIVE</div><img src="data:image/jpeg;base64,'+d[0].screenshot_b64+'" style="width:100%;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="this.requestFullscreen()"></div>';
       }
-      sendCommand(hostname,'command','screenshot');
     }catch{}
-  },3000);
+  },2000);
 }
-function stopLiveView(){if(liveViewInterval){clearInterval(liveViewInterval);liveViewInterval=null;liveViewHost=null;showToast('⏹ Live View arrete');const el=document.getElementById('live-screen');if(el)el.innerHTML='<div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour demarrer</div>';}}
+function stopLiveView(){if(liveViewInterval){if(liveViewHost)sendCommand(liveViewHost,'command','live:stop');clearInterval(liveViewInterval);liveViewInterval=null;liveViewHost=null;showToast('⏹ Live View arrete');const el=document.getElementById('live-screen');if(el)el.innerHTML='<div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour demarrer</div>';}}
 
 // SCREENSHOT GALLERY
 async function loadScreenGallery(hostname){
