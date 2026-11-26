@@ -313,6 +313,30 @@ const SB='https://imwdpuumpvecpziigsyz.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltd2RwdXVtcHZlY3B6aWlnc3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNTU4MDIsImV4cCI6MjExMDgzMTgwMn0.xK1YmdiLQ8yyWnvq4XX1KUakMoudHSCuwoN63lBIu8w';
 const H={'apikey':SK,'Authorization':'Bearer '+SK};
 let rvnPriceUsd=0,machinesCache=[],notifsEnabled=false,prevOnline={},alertAudio=null,lastLoadTime=0;
+let machineNames={};
+try{machineNames=JSON.parse(localStorage.getItem('azerty-names')||'{}');}catch{}
+function renameMachine(hostname){
+  const cur=machineNames[hostname]||hostname;
+  const modal=document.getElementById('modal');
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:20000;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML='<div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:320px;animation:modalIn .3s ease"><div style="font-size:.9rem;color:var(--text2);margin-bottom:12px">Renommer <strong style="color:var(--text)">'+esc(hostname)+'</strong></div><input id="rename-input" type="text" value="'+esc(cur)+'" style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:1rem;outline:none" autofocus><div style="display:flex;gap:8px;margin-top:12px"><button onclick="this.closest(\'div\').parentElement.remove()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text2);cursor:pointer">Annuler</button><button onclick="confirmRename(\''+esc(hostname)+'\')" style="flex:1;padding:10px;border-radius:8px;border:none;background:var(--green3);color:#fff;font-weight:600;cursor:pointer">✅ Valider</button></div></div>';
+  document.body.appendChild(overlay);
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
+  setTimeout(()=>document.getElementById('rename-input').focus(),100);
+  document.getElementById('rename-input').onkeydown=function(e){if(e.key==='Enter')confirmRename(hostname)};
+}
+function confirmRename(hostname){
+  const input=document.getElementById('rename-input');
+  if(!input)return;
+  const newName=input.value.trim();
+  if(newName&&newName!==hostname){machineNames[hostname]=newName}else{delete machineNames[hostname]}
+  try{localStorage.setItem('azerty-names',JSON.stringify(machineNames))}catch{}
+  input.closest('div').parentElement.remove();
+  loadData();
+  openMachineDetail(hostname);
+  showToast('✅ '+hostname+' renommé en '+( machineNames[hostname]||hostname));
+}
 
 // LOGIN
 const ACCESS_CODE='AZERTY8806';
@@ -412,7 +436,8 @@ function showFullscreen(src){document.getElementById('fs-img').src=src;document.
 // MACHINE DETAIL MODAL
 async function openMachineDetail(hostname){
   const m=machinesCache.find(x=>x.hostname===hostname);if(!m)return;
-  document.getElementById('m-title').innerHTML=esc(hostname)+' <span class="badge '+(m._online?'online':'offline')+'" style="font-size:.7rem">'+(m._online?'En ligne':'Hors ligne')+'</span>';
+  const displayName=machineNames[hostname]||hostname;
+  document.getElementById('m-title').innerHTML=esc(displayName)+' <span class="badge '+(m._online?'online':'offline')+'" style="font-size:.7rem">'+(m._online?'En ligne':'Hors ligne')+'</span> <button onclick="renameMachine(\''+esc(hostname)+'\')" style="background:none;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:.75rem;cursor:pointer;margin-left:8px" title="Renommer">✏️</button>';
   const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
   const gc=m.gpu_usage_percent>70?'var(--red)':m.gpu_usage_percent>40?'var(--gold)':'var(--green2)';
   const upH=Math.floor((m.uptime_minutes||0)/60),upM=(m.uptime_minutes||0)%60;
@@ -562,7 +587,7 @@ function renderNetwork(){
     return '<div class="network-group" style="animation-delay:'+(i*0.1)+'s"><div class="network-title"><span class="net-icon" style="background:'+c+'"></span>Réseau '+subnet+' ('+machines.length+')</div>'
       +machines.map(m=>'<div class="net-machine" onclick="openMachineDetail(\''+esc(m.hostname)+'\')" style="cursor:pointer">'
         +'<span class="net-dot '+(m._online?'on':'off')+'"></span>'
-        +'<div class="net-info"><div class="net-name">'+esc(m.hostname)+'</div><div class="net-ip">'+esc(m.ip_address||'--')+'</div></div>'
+        +'<div class="net-info"><div class="net-name">'+esc(machineNames[m.hostname]||m.hostname)+'</div><div class="net-ip">'+esc(m.ip_address||'--')+'</div></div>'
         +'<span class="net-hash">'+(m.hashrate_mhs||0).toFixed(1)+' MH/s</span></div>').join('')
       +'</div>';
   }).join('');
@@ -645,8 +670,9 @@ function render(machines){
     const e=estimateEarnings(m.hashrate_mhs||0,m.uptime_minutes||0);
     const cp=m.target_power||100,h=esc(m.hostname),d=(i*0.08).toFixed(2);
     const upH=Math.floor((m.uptime_minutes||0)/60),upM=(m.uptime_minutes||0)%60;
+    const dn=esc(machineNames[m.hostname]||m.hostname);
     return '<div class="card" style="animation-delay:'+d+'s" onclick="openMachineDetail(\''+h+'\')">'
-      +'<div class="card-header"><span class="card-name">'+h+'</span><span class="badge '+st+'">'+sl+'</span></div>'
+      +'<div class="card-header"><span class="card-name">'+dn+'</span><span class="badge '+st+'">'+sl+'</span></div>'
       +'<div class="card-row"><span class="k">GPU</span><span class="v">'+esc(m.gpu_name||'--')+'</span></div>'
       +'<div class="card-row"><span class="k">Hashrate</span><span class="v" style="color:var(--green2)">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</span></div>'
       +'<div class="card-row"><span class="k">GPU</span><span class="v" style="color:'+gc+'">'+m.gpu_usage_percent+'%</span></div>'
